@@ -564,9 +564,9 @@
             nombreCampo: "El Campo",
             descripcion: "Tu escapada rural perfecta",
             capacidad: "6 personas",
-            precioPorNoche: 90,
+            precioPorNoche: 120,
             estanciaMinima: 2,
-            señalPorcentaje: 20,
+            señalPorcentaje: 30,
             tuEmail: "centralperk.531@gmail.com",
             datosPago: {
                 titular: "Tu Nombre",
@@ -708,13 +708,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label>📎 Justificante *</label>
-                    <div class="file-upload" onclick="document.getElementById('justificante').click()">
-                        <input type="file" id="justificante" accept="image/*,.pdf" onchange="mostrarArchivo(this)" required>
-                        <p style="font-size: 1rem;">📤 Adjuntar</p>
-                        <p style="font-size: 0.8rem; color: #666;">Max 5MB</p>
-                        <div class="file-name" id="fileName"></div>
-                    </div>
+                    <label>📎 Justificante de Pago</label>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.8rem;">
+                        ℹ️ Recibirás un email de confirmación con los datos de la reserva. <strong>Adjunta el justificante respondiendo a ese email.</strong>
+                    </p>
                 </div>
 
                 <div id="resumenReserva" style="background: var(--color-fondo); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: none;">
@@ -799,6 +796,29 @@
                 <span class="close" onclick="cerrarModal('modalReservas')">&times;</span>
             </div>
             <div id="listadoReservas" class="reservas-list"></div>
+        </div>
+    </div>
+
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+            <h2 style="color: var(--color-principal); margin-bottom: 1rem;">¡Solicitud Enviada!</h2>
+            
+            <div style="background: #e7f3ff; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; text-align: left;">
+                <p style="margin-bottom: 1rem; font-weight: bold; color: var(--color-principal);">📧 Revisa tu email</p>
+                <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">Te hemos enviado un email de confirmación con todos los detalles de tu reserva.</p>
+                
+                <p style="margin: 1rem 0; font-weight: bold; color: var(--color-secundario);">⏳ Pendiente de aprobación</p>
+                <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">El anfitrión revisará tu solicitud y te confirmará la reserva.</p>
+                
+                <p style="margin: 1rem 0; font-weight: bold; color: #dc3545;">⚠️ IMPORTANTE</p>
+                <p style="margin-bottom: 0.8rem; font-size: 0.9rem;">Debes enviar el <strong>justificante de pago de la señal</strong> respondiendo al email que has recibido o a:</p>
+                <p style="text-align: center; background: white; padding: 0.8rem; border-radius: 6px; font-weight: bold; color: var(--color-principal);" id="emailConfirmacion"></p>
+            </div>
+            
+            <button class="btn" onclick="cerrarModal('modalConfirmacion')" style="margin-top: 1rem;">
+                Entendido
+            </button>
         </div>
     </div>
 
@@ -922,11 +942,18 @@
                     diaDiv.innerHTML += '<div style="font-size: 0.65rem;">🟢</div>';
                 }
                 
-                // Marcar como seleccionado
-                if (fechaEntradaSeleccionada === fechaStr) {
-                    diaDiv.classList.add('selected');
-                }
+                // Marcar como seleccionado el rango completo
+                const entradaSel = document.getElementById('fechaEntrada').value;
                 const salidaSel = document.getElementById('fechaSalida').value;
+                
+                if (entradaSel && salidaSel) {
+                    // Comparar solo las fechas en formato string para evitar problemas de zona horaria
+                    if (fechaStr >= entradaSel && fechaStr <= salidaSel) {
+                        diaDiv.classList.add('selected');
+                    }
+                } else if (fechaEntradaSeleccionada === fechaStr) {
+                    diaDiv.classList.add('selected');
+                }lidaSel = document.getElementById('fechaSalida').value;
                 if (salidaSel === fechaStr) {
                     diaDiv.classList.add('selected');
                 }
@@ -985,8 +1012,8 @@
                 generarCalendario();
                 mostrarAlerta('✓ Entrada seleccionada. Ahora toca la salida', 'success');
             } else {
-                const fechaEnt = new Date(fechaEntradaSeleccionada);
-                const fechaSal = new Date(fecha);
+                const fechaEnt = new Date(fechaEntradaSeleccionada + 'T12:00:00');
+                const fechaSal = new Date(fecha + 'T12:00:00');
                 
                 if (fechaSal > fechaEnt) {
                     salida.value = fecha;
@@ -1294,29 +1321,38 @@
                 await emailjs.send(
                     EMAILJS_CONFIG.serviceId,
                     EMAILJS_CONFIG.templateCliente,
-                    reserva
+                    {
+                        to_email: reserva.email,
+                        to_name: reserva.nombre,
+                        ...reserva
+                    }
                 );
                 
-                // Email al admin
+                // Email al admin (a TI)
                 await emailjs.send(
                     EMAILJS_CONFIG.serviceId,
                     EMAILJS_CONFIG.templateAdmin,
-                    reserva
+                    {
+                        to_email: CONFIG.tuEmail,
+                        ...reserva
+                    }
                 );
                 
                 reservas.push(reserva);
                 localStorage.setItem('reservas', JSON.stringify(reservas));
                 document.getElementById('totalReservas').textContent = reservas.length;
                 
-                mostrarAlerta('✅ ¡Reserva enviada! Recibirás email. La reserva está pendiente de confirmación.', 'success');
-                
+                // Limpiar formulario
                 document.getElementById('reservaForm').reset();
                 document.getElementById('resumenReserva').style.display = 'none';
-                document.getElementById('fileName').textContent = '';
                 document.getElementById('dniValidation').textContent = '';
                 document.getElementById('dniValidation').className = 'validation-message';
                 fechaEntradaSeleccionada = null;
                 generarCalendario();
+                
+                // Mostrar popup de confirmación
+                document.getElementById('emailConfirmacion').textContent = CONFIG.tuEmail;
+                document.getElementById('modalConfirmacion').classList.add('show');
                 
             } catch (error) {
                 console.error('Error:', error);
