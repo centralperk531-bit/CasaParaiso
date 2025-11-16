@@ -595,7 +595,7 @@
             <section class="section">
                 <div class="admin-controls">
                     <h3>🔧 Panel de Administración</h3>
-                    <p>📱 <strong>Mantén pulsado</strong> cualquier día del calendario para gestionar fechas y precios</p>
+                    <p>💻 <strong>Click derecho</strong> en PC | 📱 <strong>Mantén pulsado</strong> en móvil para gestionar fechas</p>
                     
                     <div class="control-buttons">
                         <button class="btn btn-secondary" onclick="cerrarAdmin()">👁️ Modo Cliente</button>
@@ -926,8 +926,14 @@
                 
                 if (fecha >= hoy) {
                     if (modoAdmin) {
-                        diaDiv.addEventListener('touchstart', (e) => {
+                        // Click derecho en PC
+                        diaDiv.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
+                            mostrarActionMenu(fechaStr);
+                        });
+                        
+                        // Mantener pulsado en móvil
+                        diaDiv.addEventListener('touchstart', (e) => {
                             touchTimer = setTimeout(() => {
                                 mostrarActionMenu(fechaStr);
                             }, 500);
@@ -1068,20 +1074,78 @@
             if (reservas.length === 0) {
                 listado.innerHTML = '<p style="text-align: center; color: #999;">Sin reservas</p>';
             } else {
-                listado.innerHTML = reservas.map((r) => `
+                listado.innerHTML = reservas.map((r, index) => `
                     <div class="reserva-item">
-                        <strong>${r.nombre}</strong> (${r.dni})<br>
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <strong>${r.nombre}</strong>
+                            ${r.confirmada ? '<span style="background: #28a745; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">✓ Confirmada</span>' : '<span style="background: #ffc107; color: #333; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">⏳ Pendiente</span>'}
+                        </div>
+                        DNI: ${r.dni}<br>
                         📧 ${r.email}<br>
                         📞 ${r.telefono}<br>
                         👥 ${r.personas} personas<br>
-                        📅 ${r.fechaEntrada} → ${r.fechaSalida}<br>
-                        💰 ${r.total}€ (Señal: ${r.señal}€)<br>
-                        ${r.comentarios ? '💬 ' + r.comentarios : ''}
+                        📅 ${r.fechaEntrada} → ${r.fechaSalida} (${r.noches} noches)<br>
+                        💰 Total: ${r.total}€ | Señal: ${r.señal}€<br>
+                        ${r.comentarios ? '💬 ' + r.comentarios + '<br>' : ''}
                         <small style="display: block; margin-top: 0.5rem;">${r.fechaReserva}</small>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.8rem;">
+                            ${!r.confirmada ? `<button class="btn btn-success" style="padding: 0.5rem; font-size: 0.9rem;" onclick="confirmarReserva(${index})">✓ Confirmar</button>` : ''}
+                            <button class="btn btn-danger" style="padding: 0.5rem; font-size: 0.9rem;" onclick="eliminarReserva(${index})">🗑️ Eliminar</button>
+                        </div>
                     </div>
                 `).join('');
             }
             document.getElementById('modalReservas').classList.add('show');
+        }
+
+        function confirmarReserva(index) {
+            if (!confirm('¿Confirmar esta reserva? Se bloquearán las fechas en el calendario.')) return;
+            
+            reservas[index].confirmada = true;
+            
+            // Bloquear fechas
+            const r = reservas[index];
+            const fechaInicio = new Date(r.fechaEntrada);
+            const fechaFin = new Date(r.fechaSalida);
+            for (let d = new Date(fechaInicio); d < fechaFin; d.setDate(d.getDate() + 1)) {
+                const fechaStr = d.toISOString().split('T')[0];
+                if (!fechasBloqueadas.includes(fechaStr)) {
+                    fechasBloqueadas.push(fechaStr);
+                }
+            }
+            
+            localStorage.setItem('reservas', JSON.stringify(reservas));
+            guardarDatos();
+            generarCalendario();
+            mostrarReservas();
+            mostrarAlerta('✓ Reserva confirmada y fechas bloqueadas', 'success');
+        }
+
+        function eliminarReserva(index) {
+            if (!confirm('¿Eliminar esta reserva? Si estaba confirmada, se desbloquearán las fechas.')) return;
+            
+            const r = reservas[index];
+            
+            // Si estaba confirmada, desbloquear fechas
+            if (r.confirmada) {
+                const fechaInicio = new Date(r.fechaEntrada);
+                const fechaFin = new Date(r.fechaSalida);
+                for (let d = new Date(fechaInicio); d < fechaFin; d.setDate(d.getDate() + 1)) {
+                    const fechaStr = d.toISOString().split('T')[0];
+                    const idx = fechasBloqueadas.indexOf(fechaStr);
+                    if (idx > -1) {
+                        fechasBloqueadas.splice(idx, 1);
+                    }
+                }
+                guardarDatos();
+                generarCalendario();
+            }
+            
+            reservas.splice(index, 1);
+            localStorage.setItem('reservas', JSON.stringify(reservas));
+            document.getElementById('totalReservas').textContent = reservas.length;
+            mostrarReservas();
+            mostrarAlerta('✓ Reserva eliminada', 'success');
         }
 
         function descargarReservas() {
@@ -1200,7 +1264,8 @@
                     señal: document.getElementById('resumenSeñal').textContent,
                     comentarios: document.getElementById('comentarios').value,
                     nombreCampo: CONFIG.nombreCampo,
-                    archivoNombre: archivo.name
+                    archivoNombre: archivo.name,
+                    confirmada: false  // Las reservas empiezan como pendientes
                 };
                 
                 // Email al cliente
@@ -1220,29 +1285,17 @@
                     }
                 );
                 
-                // Guardar reserva
+                // Guardar reserva (SIN bloquear fechas todavía)
                 reservas.push(reserva);
                 localStorage.setItem('reservas', JSON.stringify(reservas));
                 document.getElementById('totalReservas').textContent = reservas.length;
                 
-                // Bloquear fechas
-                const fechaInicio = new Date(reserva.fechaEntrada);
-                const fechaFin = new Date(reserva.fechaSalida);
-                for (let d = new Date(fechaInicio); d < fechaFin; d.setDate(d.getDate() + 1)) {
-                    const fechaStr = d.toISOString().split('T')[0];
-                    if (!fechasBloqueadas.includes(fechaStr)) {
-                        fechasBloqueadas.push(fechaStr);
-                    }
-                }
-                guardarDatos();
-                generarCalendario();
-                
-                mostrarAlerta('✅ ¡Reserva enviada! Recibirás un email de confirmación. Las fechas están bloqueadas.', 'success');
+                mostrarAlerta('✅ ¡Reserva enviada! Recibirás un email de confirmación. La reserva está PENDIENTE de tu confirmación.', 'success');
                 
                 document.getElementById('reservaForm').reset();
                 document.getElementById('resumenReserva').style.display = 'none';
                 document.getElementById('fileName').textContent = '';
-                document.getElementById('dniValidation').textContent = '';
+                document.getElementById('dniValidacion').textContent = '';
                 document.getElementById('dniValidation').className = 'validation-message';
                 
             } catch (error) {
