@@ -559,6 +559,9 @@
 <body>
     <script>
         const ADMIN_PASSWORD = "micampo2025";
+        
+        // URL de Google Apps Script
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZwf0KrmvwgEAErHlsDNO88WxKPacCfwfQOOtJWwpHfhnDZltUfA2sHFPwR5w44vTD/exec";
 
         const CONFIG = {
             nombreCampo: "El Campo",
@@ -582,14 +585,15 @@
             templateAdmin: "template_iv17wmi"
         };
 
-        let fechasBloqueadas = ["2025-12-24", "2025-12-25", "2025-12-31", "2026-01-01"];
-        let preciosPersonalizados = {"2025-12-24": 200, "2025-12-31": 250};
+        let fechasBloqueadas = [];
+        let preciosPersonalizados = {};
         let modoAdmin = false;
         let mesActual = new Date();
-        let reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+        let reservas = [];
         let fechaSeleccionadaAdmin = null;
         let touchTimer = null;
         let fechaEntradaSeleccionada = null;
+        let datosGoogleCargados = false;
     </script>
 
     <header>
@@ -848,19 +852,36 @@
         document.getElementById('footerEmail').textContent = CONFIG.tuEmail;
         document.getElementById('totalReservas').textContent = reservas.length;
 
-        const datosGuardados = localStorage.getItem('datosAlquiler');
-        if (datosGuardados) {
-            const datos = JSON.parse(datosGuardados);
-            fechasBloqueadas = datos.fechasBloqueadas || fechasBloqueadas;
-            preciosPersonalizados = datos.preciosPersonalizados || preciosPersonalizados;
+        // CARGAR DATOS DESDE GOOGLE SHEETS
+        async function cargarDatosGoogle() {
+            try {
+                // Cargar fechas bloqueadas
+                const resFechas = await fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerFechasBloqueadas');
+                const dataFechas = await resFechas.json();
+                
+                if (dataFechas.success) {
+                    fechasBloqueadas = dataFechas.fechas || [];
+                }
+
+                // Cargar precios personalizados
+                const resPrecios = await fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerPrecios');
+                const dataPrecios = await resPrecios.json();
+                
+                if (dataPrecios.success) {
+                    preciosPersonalizados = dataPrecios.precios || {};
+                }
+
+                datosGoogleCargados = true;
+                generarCalendario();
+                
+            } catch (error) {
+                console.error('Error al cargar desde Google Sheets:', error);
+                mostrarAlerta('⚠️ Error al cargar disponibilidad. Recarga la página.', 'error');
+            }
         }
 
-        function guardarDatos() {
-            localStorage.setItem('datosAlquiler', JSON.stringify({
-                fechasBloqueadas,
-                preciosPersonalizados
-            }));
-        }
+        // Llamar al cargar la página
+        cargarDatosGoogle();
 
         function validarDNI(dni) {
             const dniRegex = /^[0-9]{8}[A-Z]$/i;
