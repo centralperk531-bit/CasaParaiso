@@ -229,6 +229,22 @@
             font-size: 1rem;
         }
 
+        .section {
+            background: var(--color-blanco);
+            border-radius: 12px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            color: var(--color-principal);
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+            border-bottom: 3px solid var(--color-acento);
+            padding-bottom: 0.4rem;
+        }
+
         .galeria {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -584,9 +600,9 @@
         <section class="section">
             <h2>📸 Galería</h2>
             <div class="galeria">
-                <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800" alt="Fachada principal de la casa rural 'El Campo', con su jardín bien cuidado y la entrada de madera." onclick="verImagenGrande(this.src)">
-                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400" alt="Acogedor salón con chimenea y vistas al campo." onclick="verImagenGrande(this.src)">
-                <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400" alt="Jardín trasero con mesa y sillas para disfrutar al aire libre." onclick="verImagenGrande(this.src)">
+                <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800" alt="Casa principal" onclick="verImagenGrande(this.src)">
+                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400" alt="Interior" onclick="verImagenGrande(this.src)">
+                <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400" alt="Jardín" onclick="verImagenGrande(this.src)">
             </div>
             <p style="text-align: center; font-size: 0.85rem; color: #666;">
                 Toca las imágenes para ampliar
@@ -617,8 +633,8 @@
 
         <section class="section">
             <h2>📅 Disponibilidad</h2>
-            <p id="ayudaCalendario" style="text-align: center; color: var(--color-secundario); margin-bottom: 0.6rem; font-size: 0.8rem;">
-                Toca para seleccionar tu fecha de entrada y salida | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>
+            <p style="text-align: center; color: var(--color-secundario); margin-bottom: 0.6rem; font-size: 0.8rem;">
+                Toca entrada y salida | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>
             </p>
             <div class="month-selector">
                 <button onclick="cambiarMes(-1)">◀</button>
@@ -803,9 +819,10 @@
 
     <script>
         // ===== CONFIGURACIÓN =====
+        const ADMIN_PASSWORD = "micampo2025";
         
         // 🔥 CAMBIA ESTA URL POR LA TUYA
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRtlm_mjfk6uUnAppYEwdgBw2vU21iAUVRZcUgBfOG-AvoYFEp_nt63CZgedCpR_9e/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWRDsD3AQGmnLcYeEo_mRvp7hYg67X9dOnjC_FxOA6-IQXG7b_-2-6X76nyb94joT-/exec";
 
         const CONFIG = {
             nombreCampo: "El Campo",
@@ -864,6 +881,7 @@
 
         async function cargarDatosGoogle() {
             try {
+                // Cargar en paralelo para ser más rápido
                 const [resFechas, resPrecios, resReservas] = await Promise.all([
                     fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerFechasBloqueadas'),
                     fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerPrecios'),
@@ -878,14 +896,18 @@
                 
                 if (dataFechas.success) {
                     fechasBloqueadas = dataFechas.fechas || [];
+                    console.log('✅ Fechas bloqueadas:', fechasBloqueadas.length);
                 }
                 
                 if (dataPrecios.success) {
                     preciosPersonalizados = dataPrecios.precios || {};
+                    console.log('✅ Precios personalizados:', Object.keys(preciosPersonalizados).length);
                 }
                 
                 if (dataReservas.success) {
                     const reservasGoogle = dataReservas.reservas || [];
+                    
+                    // Limpiar fechas con hora y reindexar
                     reservas = reservasGoogle.map((r, index) => {
                         let fechaEntrada = r.fechaEntrada || '';
                         let fechaSalida = r.fechaSalida || '';
@@ -897,12 +919,13 @@
                             ...r,
                             fechaEntrada,
                             fechaSalida,
-                            indiceLocal: index
+                            indiceLocal: index // Índice del array local
                         };
                     });
                     
                     localStorage.setItem('reservas', JSON.stringify(reservas));
                     document.getElementById('totalReservas').textContent = reservas.length;
+                    console.log('✅ Reservas cargadas:', reservas.length);
                 }
 
                 generarCalendario();
@@ -913,132 +936,170 @@
             }
         }
 
+        async function cargarReservasGoogle() {
+            // Esta función ya no es necesaria, se carga en cargarDatosGoogle
+            return;
+        }
+
         async function guardarFechaBloqueada(fecha) {
             try {
+                console.log('🔒 Bloqueando fecha:', fecha);
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ accion: 'bloquearFecha', fecha: fecha })
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify({
+                        accion: 'bloquearFecha',
+                        fecha: fecha
+                    })
                 });
+                
                 const data = await response.json();
-                return data;
+                console.log('📥 Respuesta bloquear:', data);
+                return data.success;
             } catch (error) {
                 console.error('❌ Error bloquear:', error);
-                return { success: false, message: 'Error de conexión' };
+                return false;
             }
         }
 
         async function eliminarFechaBloqueada(fecha) {
             try {
+                console.log('🔓 Desbloqueando fecha:', fecha);
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ accion: 'desbloquearFecha', fecha: fecha })
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify({
+                        accion: 'desbloquearFecha',
+                        fecha: fecha
+                    })
                 });
+                
                 const data = await response.json();
-                return data;
+                console.log('📥 Respuesta desbloquear:', data);
+                return data.success;
             } catch (error) {
                 console.error('❌ Error desbloquear:', error);
-                return { success: false, message: 'Error de conexión' };
+                return false;
             }
         }
 
         async function guardarPrecioGoogle(fecha, precio) {
             try {
+                console.log('💰 Guardando precio:', fecha, precio);
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
                     body: JSON.stringify({
                         accion: 'guardarPrecio',
                         fecha: fecha,
                         precio: parseFloat(precio)
                     })
                 });
+                
                 const data = await response.json();
-                return data;
+                console.log('📥 Respuesta precio:', data);
+                return data.success;
             } catch (error) {
                 console.error('❌ Error precio:', error);
-                return { success: false, message: 'Error de conexión' };
+                return false;
             }
         }
 
         async function guardarReservaGoogle(reserva) {
             try {
+                console.log('📝 Guardando reserva:', reserva);
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ accion: 'guardarReserva', ...reserva })
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify({
+                        accion: 'guardarReserva',
+                        ...reserva
+                    })
                 });
+                
                 const data = await response.json();
-                return data;
+                console.log('📥 Respuesta reserva:', data);
+                return data.success;
             } catch (error) {
                 console.error('❌ Error reserva:', error);
-                return { success: false, message: 'Error de conexión' };
+                return false;
             }
         }
 
         async function bloquearRangoGoogle(fechas) {
             try {
+                console.log('🔒 Bloqueando rango de', fechas.length, 'fechas:', fechas);
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ accion: 'bloquearRango', fechas: fechas })
-                });
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('❌ Error bloquear rango:', error);
-                return { success: false, message: 'Error de conexión' };
-            }
-        }
-        
-        // NUEVA FUNCIÓN
-        async function eliminarReservaGoogle(email, fechaEntrada) {
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
                     body: JSON.stringify({
-                        accion: 'eliminarReserva',
-                        email: email,
-                        fechaEntrada: fechaEntrada
+                        accion: 'bloquearRango',
+                        fechas: fechas
                     })
                 });
+                
                 const data = await response.json();
-                return data;
+                console.log('📥 Respuesta bloquear rango:', data);
+                return data.success;
             } catch (error) {
-                console.error('❌ Error al eliminar reserva:', error);
-                return { success: false, message: 'Error de conexión al eliminar' };
+                console.error('❌ Error bloquear rango:', error);
+                return false;
             }
         }
 
-        // ===== FUNCIONES DE ADMIN (ACTUALIZADAS) =====
+        // ===== FUNCIONES DE ADMIN =====
 
         async function bloquearFecha() {
-            const exito = await guardarFechaBloqueada(fechaSeleccionadaAdmin);
+            mostrarAlerta('⏳ Bloqueando...', 'success');
             
-            if (exito.success) {
-                mostrarAlerta('✓ ' + exito.message, 'success');
-                cerrarActionMenu();
-                await cargarDatosGoogle();
-                generarCalendario();
+            if (!fechasBloqueadas.includes(fechaSeleccionadaAdmin)) {
+                const exito = await guardarFechaBloqueada(fechaSeleccionadaAdmin);
+                
+                if (exito) {
+                    fechasBloqueadas.push(fechaSeleccionadaAdmin);
+                    await cargarDatosGoogle();
+                    cerrarActionMenu();
+                    mostrarAlerta('✓ Fecha bloqueada: ' + fechaSeleccionadaAdmin, 'success');
+                } else {
+                    cerrarActionMenu();
+                    mostrarAlerta('❌ Error al bloquear. Revisa la consola (F12)', 'error');
+                }
             } else {
                 cerrarActionMenu();
-                mostrarAlerta('❌ ' + exito.message, 'error');
+                mostrarAlerta('Ya está bloqueada', 'error');
             }
         }
 
         async function desbloquearFecha() {
-            const exito = await eliminarFechaBloqueada(fechaSeleccionadaAdmin);
+            const index = fechasBloqueadas.indexOf(fechaSeleccionadaAdmin);
             
-            if (exito.success) {
-                mostrarAlerta('✓ ' + exito.message, 'success');
-                cerrarActionMenu();
-                await cargarDatosGoogle();
-                generarCalendario();
+            mostrarAlerta('⏳ Desbloqueando...', 'success');
+            
+            if (index > -1) {
+                const exito = await eliminarFechaBloqueada(fechaSeleccionadaAdmin);
+                
+                if (exito) {
+                    fechasBloqueadas.splice(index, 1);
+                    await cargarDatosGoogle();
+                    cerrarActionMenu();
+                    mostrarAlerta('✓ Fecha desbloqueada: ' + fechaSeleccionadaAdmin, 'success');
+                } else {
+                    cerrarActionMenu();
+                    mostrarAlerta('❌ Error al desbloquear. Revisa la consola (F12)', 'error');
+                }
             } else {
                 cerrarActionMenu();
-                mostrarAlerta('❌ ' + exito.message, 'error');
+                mostrarAlerta('No está bloqueada', 'error');
             }
         }
 
@@ -1052,27 +1113,31 @@
             
             const exito = await guardarPrecioGoogle(fechaSeleccionadaAdmin, precio);
             
-            if (exito.success) {
+            if (exito) {
                 preciosPersonalizados[fechaSeleccionadaAdmin] = parseFloat(precio);
                 cerrarModal('modalPrecio');
                 document.getElementById('nuevoPrecio').value = '';
                 await cargarDatosGoogle();
-                generarCalendario();
-                mostrarAlerta('✓ ' + exito.message, 'success');
+                mostrarAlerta('✓ Precio: ' + precio + '€', 'success');
             } else {
-                mostrarAlerta('❌ ' + exito.message, 'error');
+                mostrarAlerta('❌ Error al guardar precio', 'error');
             }
         }
 
         async function confirmarReserva(index) {
             if (!confirm('¿Confirmar reserva? Se bloquearán las fechas.')) return;
             
+            mostrarAlerta('⏳ Confirmando y bloqueando...', 'success');
+            
             const r = reservas[index];
+            
             const fechasABloquear = [];
             const [yearIni, mesIni, diaIni] = r.fechaEntrada.split('-').map(Number);
             const [yearFin, mesFin, diaFin] = r.fechaSalida.split('-').map(Number);
             const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
             const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
+            
+            console.log('📅 Bloqueando desde', r.fechaEntrada, 'hasta', r.fechaSalida);
             
             for (let d = new Date(fechaInicio); d < fechaFin; d.setDate(d.getDate() + 1)) {
                 const year = d.getFullYear();
@@ -1084,57 +1149,103 @@
                 }
             }
             
+            console.log('📋 Fechas a bloquear:', fechasABloquear);
+            
+            if (fechasABloquear.length === 0) {
+                mostrarAlerta('⚠️ Fechas ya bloqueadas', 'error');
+                return;
+            }
+            
             const exito = await bloquearRangoGoogle(fechasABloquear);
             
-            if (exito.success) {
-                mostrarAlerta('✓ ' + exito.message, 'success');
+            if (exito) {
+                fechasBloqueadas.push(...fechasABloquear);
+                reservas[index].confirmada = true;
+                localStorage.setItem('reservas', JSON.stringify(reservas));
+                
                 await cargarDatosGoogle();
+                
                 mostrarReservas();
+                mostrarAlerta('✓ Confirmada! Bloqueadas ' + fechasABloquear.length + ' noches', 'success');
             } else {
-                mostrarAlerta('❌ ' + exito.message, 'error');
+                mostrarAlerta('❌ Error al confirmar. Revisa la consola (F12)', 'error');
             }
         }
 
         async function eliminarReserva(index) {
             if (!confirm('¿Eliminar esta reserva?')) return;
             
+            console.log('=== INICIO ELIMINACIÓN ===');
+            console.log('Index:', index);
+            console.log('Reserva:', reservas[index]);
+            
+            mostrarAlerta('⏳ Eliminando...', 'success');
+            
             const r = reservas[index];
             
+            // Si está confirmada, desbloquear fechas primero
             if (r.confirmada) {
+                console.log('🔓 Desbloqueando fechas de reserva confirmada...');
+                
                 let entrada = r.fechaEntrada || '';
                 let salida = r.fechaSalida || '';
+                
                 if (entrada.includes('T')) entrada = entrada.split('T')[0];
                 if (salida.includes('T')) salida = salida.split('T')[0];
                 
-                if (entrada && salida) {
+                console.log('Fechas a desbloquear:', entrada, '→', salida);
+                
+                if (entrada && salida && entrada.length === 10 && salida.length === 10) {
                     const [yearIni, mesIni, diaIni] = entrada.split('-').map(Number);
                     const [yearFin, mesFin, diaFin] = salida.split('-').map(Number);
-                    const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
-                    const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
+                    const fechaInicio = new Date(yearIni, mesIni - 1, diaIni, 12, 0, 0);
+                    const fechaFin = new Date(yearFin, mesFin - 1, diaFin, 12, 0, 0);
                     
                     const promesas = [];
+                    let desbloqueadas = 0;
+                    
                     let currentDate = new Date(fechaInicio);
                     while (currentDate < fechaFin) {
                         const year = currentDate.getFullYear();
                         const mes = String(currentDate.getMonth() + 1).padStart(2, '0');
                         const dia = String(currentDate.getDate()).padStart(2, '0');
                         const fechaStr = year + '-' + mes + '-' + dia;
-                        promesas.push(eliminarFechaBloqueada(fechaStr));
+                        
+                        const idx = fechasBloqueadas.indexOf(fechaStr);
+                        if (idx > -1) {
+                            console.log('Desbloqueando:', fechaStr);
+                            fechasBloqueadas.splice(idx, 1);
+                            promesas.push(eliminarFechaBloqueada(fechaStr));
+                            desbloqueadas++;
+                        }
+                        
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
-                    await Promise.all(promesas);
+                    
+                    console.log('Total a desbloquear:', desbloqueadas);
+                    
+                    if (promesas.length > 0) {
+                        console.log('Esperando promesas...');
+                        await Promise.all(promesas);
+                        console.log('✅ Fechas desbloqueadas');
+                    }
                 }
             }
             
-            const exito = await eliminarReservaGoogle(r.email, r.fechaEntrada);
-
-            if (exito.success) {
-                mostrarAlerta('✓ ' + exito.message, 'success');
-                await cargarDatosGoogle();
-                mostrarReservas();
-            } else {
-                mostrarAlerta('❌ ' + exito.message, 'error');
-            }
+            // Eliminar de array local
+            console.log('Eliminando de array local...');
+            reservas.splice(index, 1);
+            localStorage.setItem('reservas', JSON.stringify(reservas));
+            document.getElementById('totalReservas').textContent = reservas.length;
+            
+            // Recargar datos
+            console.log('🔄 Recargando datos...');
+            await cargarDatosGoogle();
+            
+            mostrarReservas();
+            mostrarAlerta('✓ Reserva eliminada', 'success');
+            
+            console.log('=== FIN ELIMINACIÓN ===');
         }
 
         // ===== FUNCIONES DE VALIDACIÓN =====
@@ -1181,13 +1292,19 @@
         // ===== FUNCIONES DE CALENDARIO =====
 
         function generarCalendario() {
+            console.log('📅 === GENERANDO CALENDARIO ===');
+            
             const año = mesActual.getFullYear();
             const mes = mesActual.getMonth();
+            
+            console.log('📆 Año:', año, 'Mes:', mes);
             
             const primerDia = new Date(año, mes, 1);
             const ultimoDia = new Date(año, mes + 1, 0);
             const diasMes = ultimoDia.getDate();
             const primerDiaSemana = primerDia.getDay();
+            
+            console.log('📊 Días del mes:', diasMes, 'Primer día semana:', primerDiaSemana);
             
             const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                           'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -1195,7 +1312,14 @@
             document.getElementById('mesActual').textContent = meses[mes] + ' ' + año;
             
             const calendario = document.getElementById('calendario');
+            
+            if (!calendario) {
+                console.error('❌ No se encuentra elemento #calendario');
+                return;
+            }
+            
             calendario.innerHTML = '';
+            console.log('🗑️ Calendario limpiado');
             
             const dias = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
             dias.forEach(dia => {
@@ -1204,13 +1328,18 @@
                 header.textContent = dia;
                 calendario.appendChild(header);
             });
+            console.log('📋 Headers añadidos');
             
             for (let i = 0; i < primerDiaSemana; i++) {
                 calendario.appendChild(document.createElement('div'));
             }
+            console.log('⬜ Espacios vacíos añadidos:', primerDiaSemana);
             
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
+            
+            console.log('📅 Generando días del mes...');
+            let diasCreados = 0;
             
             for (let dia = 1; dia <= diasMes; dia++) {
                 const fecha = new Date(año, mes, dia);
@@ -1281,7 +1410,11 @@
                 }
                 
                 calendario.appendChild(diaDiv);
+                diasCreados++;
             }
+            
+            console.log('✅ Días creados:', diasCreados);
+            console.log('📅 === CALENDARIO GENERADO ===');
         }
 
         function cambiarMes(dir) {
@@ -1292,11 +1425,9 @@
         function seleccionarFechaCliente(fecha) {
             const entrada = document.getElementById('fechaEntrada');
             const salida = document.getElementById('fechaSalida');
-            const ayudaTexto = document.getElementById('ayudaCalendario');
-
+            
             if (fechaEntradaSeleccionada === fecha && !salida.value) {
                 limpiarFechas();
-                ayudaTexto.innerHTML = 'Toca para seleccionar tu fecha de entrada y salida | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>';
                 mostrarAlerta('✓ Fechas limpiadas', 'success');
                 return;
             }
@@ -1304,7 +1435,6 @@
             if (entrada.value && salida.value) {
                 if (fecha >= entrada.value && fecha <= salida.value) {
                     limpiarFechas();
-                    ayudaTexto.innerHTML = 'Toca para seleccionar tu fecha de entrada y salida | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>';
                     mostrarAlerta('✓ Fechas limpiadas. Selecciona de nuevo', 'success');
                     return;
                 }
@@ -1315,21 +1445,18 @@
                 entrada.value = fecha;
                 salida.value = '';
                 generarCalendario();
-                ayudaTexto.innerHTML = '✅ Entrada seleccionada. <strong>Ahora selecciona tu fecha de salida</strong> | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>';
                 mostrarAlerta('✓ Entrada seleccionada. Ahora selecciona salida', 'success');
             } else {
                 if (fecha > fechaEntradaSeleccionada) {
                     salida.value = fecha;
                     calcularResumen();
                     generarCalendario();
-                    ayudaTexto.innerHTML = '✅ Fechas seleccionadas. Puedes cambiarlas si lo necesitas | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>';
                     mostrarAlerta('✓ Fechas seleccionadas', 'success');
                 } else {
                     entrada.value = fecha;
                     salida.value = '';
                     fechaEntradaSeleccionada = fecha;
                     generarCalendario();
-                    ayudaTexto.innerHTML = '✅ Nueva entrada. <strong>Selecciona tu fecha de salida</strong> | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>';
                     mostrarAlerta('✓ Nueva entrada. Selecciona salida', 'success');
                 }
             }
@@ -1340,7 +1467,6 @@
             document.getElementById('fechaSalida').value = '';
             document.getElementById('resumenReserva').style.display = 'none';
             fechaEntradaSeleccionada = null;
-            document.getElementById('ayudaCalendario').innerHTML = 'Toca para seleccionar tu fecha de entrada y salida | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>';
             generarCalendario();
         }
 
@@ -1384,7 +1510,7 @@
             }
         }
 
-        // ===== FUNCIONES DE ADMIN (INTERFAZ) =====
+        // ===== FUNCIONES DE ADMIN =====
 
         function mostrarActionMenu(fecha) {
             fechaSeleccionadaAdmin = fecha;
@@ -1419,38 +1545,18 @@
 
         async function verificarPassword() {
             const password = document.getElementById('passwordAdmin').value;
-            const btnLogin = event.target;
-            btnLogin.disabled = true;
-            btnLogin.textContent = 'Verificando...';
-
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({
-                        accion: 'verificarPassword',
-                        password: password
-                    })
-                });
+            if (password === ADMIN_PASSWORD) {
+                modoAdmin = true;
+                document.getElementById('adminPanel').classList.add('show');
+                cerrarModal('modalLoginAdmin');
+                document.getElementById('passwordAdmin').value = '';
                 
-                const data = await response.json();
-
-                if (data.success) {
-                    modoAdmin = true;
-                    document.getElementById('adminPanel').classList.add('show');
-                    cerrarModal('modalLoginAdmin');
-                    document.getElementById('passwordAdmin').value = '';
-                    generarCalendario();
-                    mostrarAlerta('✓ Modo admin activado', 'success');
-                } else {
-                    mostrarAlerta('❌ ' + data.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error al verificar:', error);
-                mostrarAlerta('❌ Error de conexión. Inténtalo de nuevo.', 'error');
-            } finally {
-                btnLogin.disabled = false;
-                btnLogin.textContent = 'Entrar';
+                await cargarReservasGoogle();
+                
+                generarCalendario();
+                mostrarAlerta('✓ Modo admin activado', 'success');
+            } else {
+                mostrarAlerta('Contraseña incorrecta', 'error');
             }
         }
 
@@ -1572,8 +1678,8 @@
                 
                 const exitoGoogle = await guardarReservaGoogle(reserva);
                 
-                if (!exitoGoogle.success) {
-                    throw new Error(exitoGoogle.message || 'Error al guardar en Google Sheets');
+                if (!exitoGoogle) {
+                    throw new Error('Error al guardar en Google Sheets');
                 }
                 
                 await emailjs.send(
@@ -1658,7 +1764,11 @@
         }
 
         // ===== CARGAR AL INICIO =====
-        cargarDatosGoogle();
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página cargada, iniciando...');
+            cargarDatosGoogle();
+        });
+        
         console.log('✅ Sistema inicializado');
     </script>
 </body>
