@@ -1474,8 +1474,14 @@
                 const salidaSel = document.getElementById('fechaSalida').value;
                 
                 if (entradaSel && salidaSel) {
+                    // Marcar como seleccionados desde entrada hasta EL DÍA ANTERIOR a salida
                     if (fechaStr >= entradaSel && fechaStr < salidaSel) {
                         diaDiv.classList.add('selected');
+                    }
+                    // Marcar el día de salida con un borde especial
+                    if (fechaStr === salidaSel) {
+                        diaDiv.style.borderColor = '#ffc107';
+                        diaDiv.style.borderWidth = '2px';
                     }
                 } else if (fechaEntradaSeleccionada === fechaStr) {
                     diaDiv.classList.add('selected');
