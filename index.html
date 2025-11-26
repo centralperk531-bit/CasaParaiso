@@ -1319,16 +1319,36 @@
 
         async function moverReservaEliminada(reserva) {
             try {
+                console.log('📦 Enviando reserva a eliminar:', reserva);
+                
+                const payload = {
+                    accion: 'moverReservaEliminada',
+                    fechaEliminacion: new Date().toLocaleString('es-ES'),
+                    reserva: {
+                        fechaReserva: reserva.fechaReserva,
+                        nombre: reserva.nombre,
+                        dni: reserva.dni,
+                        email: reserva.email,
+                        telefono: reserva.telefono,
+                        personas: reserva.personas,
+                        fechaEntrada: reserva.fechaEntrada,
+                        fechaSalida: reserva.fechaSalida,
+                        noches: reserva.noches,
+                        total: reserva.total,
+                        señal: reserva.señal,
+                        comentarios: reserva.comentarios,
+                        confirmada: reserva.confirmada
+                    }
+                };
+                
+                console.log('📤 Payload completo:', JSON.stringify(payload));
+                
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain'
                     },
-                    body: JSON.stringify({
-                        accion: 'moverReservaEliminada',
-                        reserva: reserva,
-                        fechaEliminacion: new Date().toLocaleString('es-ES')
-                    })
+                    body: JSON.stringify(payload)
                 });
                 
                 const data = await response.json();
