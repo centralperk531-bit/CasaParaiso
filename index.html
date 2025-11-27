@@ -1319,36 +1319,16 @@
 
         async function moverReservaEliminada(reserva) {
             try {
-                console.log('📦 Enviando reserva a eliminar:', reserva);
-                
-                const payload = {
-                    accion: 'moverReservaEliminada',
-                    fechaEliminacion: new Date().toLocaleString('es-ES'),
-                    reserva: {
-                        fechaReserva: reserva.fechaReserva,
-                        nombre: reserva.nombre,
-                        dni: reserva.dni,
-                        email: reserva.email,
-                        telefono: reserva.telefono,
-                        personas: reserva.personas,
-                        fechaEntrada: reserva.fechaEntrada,
-                        fechaSalida: reserva.fechaSalida,
-                        noches: reserva.noches,
-                        total: reserva.total,
-                        señal: reserva.señal,
-                        comentarios: reserva.comentarios,
-                        confirmada: reserva.confirmada
-                    }
-                };
-                
-                console.log('📤 Payload completo:', JSON.stringify(payload));
-                
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        accion: 'moverReservaEliminada',
+                        reserva: reserva,
+                        fechaEliminacion: new Date().toLocaleString('es-ES')
+                    })
                 });
                 
                 const data = await response.json();
@@ -1413,27 +1393,30 @@
                           'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             
             const mesTexto = meses[mes] + ' ' + año;
-            document.getElementById('mesActual').textContent = mesTexto;
             
-            // También actualizar el del formulario si existe
+            // Actualizar ambos títulos de mes
+            const mesActualEl = document.getElementById('mesActual');
+            if (mesActualEl) mesActualEl.textContent = mesTexto;
+            
             const mesReserva = document.getElementById('mesActualReserva');
-            if (mesReserva) {
-                mesReserva.textContent = mesTexto;
+            if (mesReserva) mesReserva.textContent = mesTexto;
+            
+            // Generar calendario principal (para móvil y admin)
+            const calendarioPrincipal = document.getElementById('calendario');
+            if (calendarioPrincipal) {
+                generarCalendarioEnElemento('calendario', año, mes, true); // true = permitir admin
             }
             
-            // Generar calendario principal
-            generarCalendarioEnElemento('calendario', año, mes);
-            
-            // Generar calendario del formulario si existe
+            // Generar calendario del formulario (solo para selección)
             const calendarioReserva = document.getElementById('calendarioReserva');
             if (calendarioReserva) {
-                generarCalendarioEnElemento('calendarioReserva', año, mes);
+                generarCalendarioEnElemento('calendarioReserva', año, mes, false); // false = no admin
             }
             
             console.log('✅ === CALENDARIO GENERADO ===');
         }
 
-        function generarCalendarioEnElemento(idElemento, año, mes) {
+        function generarCalendarioEnElemento(idElemento, año, mes, permitirAdmin) {
             const primerDia = new Date(año, mes, 1);
             const ultimoDia = new Date(año, mes + 1, 0);
             const diasMes = ultimoDia.getDate();
@@ -1508,7 +1491,8 @@
                 }
                 
                 if (fecha >= hoy) {
-                    if (modoAdmin && idElemento === 'calendario') {
+                    // Solo en el calendario principal se permite admin (botón derecho/mantener)
+                    if (modoAdmin && permitirAdmin && idElemento === 'calendario') {
                         diaDiv.addEventListener('contextmenu', function(e) {
                             e.preventDefault();
                             mostrarActionMenu(fechaStr);
@@ -1530,6 +1514,7 @@
                         });
                         
                     } else if (!esBloqueado) {
+                        // En cualquier calendario, si no está bloqueado, permitir selección
                         diaDiv.addEventListener('click', function(e) {
                             e.preventDefault();
                             seleccionarFechaCliente(fechaStr);
@@ -1687,6 +1672,13 @@
             if (password === ADMIN_PASSWORD) {
                 modoAdmin = true;
                 document.getElementById('adminPanel').classList.add('show');
+                
+                // Mostrar el calendario grande en móvil también para admin
+                const seccionDisp = document.getElementById('seccionDisponibilidad');
+                if (seccionDisp) {
+                    seccionDisp.style.display = 'block';
+                }
+                
                 cerrarModal('modalLoginAdmin');
                 document.getElementById('passwordAdmin').value = '';
                 
@@ -1697,6 +1689,22 @@
             } else {
                 mostrarAlerta('Contraseña incorrecta', 'error');
             }
+        }
+
+        function cerrarAdmin() {
+            modoAdmin = false;
+            document.getElementById('adminPanel').classList.remove('show');
+            
+            // Ocultar calendario grande en PC cuando salimos de admin
+            if (window.innerWidth >= 768) {
+                const seccionDisp = document.getElementById('seccionDisponibilidad');
+                if (seccionDisp) {
+                    seccionDisp.style.display = 'none';
+                }
+            }
+            
+            generarCalendario();
+            mostrarAlerta('✓ Modo cliente', 'success');
         }
 
         function cerrarAdmin() {
@@ -1905,6 +1913,15 @@
         // ===== CARGAR AL INICIO =====
         window.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página cargada, iniciando...');
+            console.log('🔗 URL de Google Script:', GOOGLE_SCRIPT_URL);
+            console.log('⚠️ Si ves errores de CORS, debes:');
+            console.log('   1. Ir a Apps Script');
+            console.log('   2. Implementar → Administrar implementaciones');
+            console.log('   3. Clic en ✏️ lápiz');
+            console.log('   4. Cambiar "Versión" a "Nueva versión"');
+            console.log('   5. Implementar');
+            console.log('   6. Esperar 20 segundos');
+            console.log('   7. Refrescar esta página');
             cargarDatosGoogle();
         });
         
