@@ -192,9 +192,11 @@
     <div id="actionMenu" class="action-menu">
         <h3 id="actionMenuTitle">Fecha</h3>
         <div class="action-buttons">
-            <button class="btn btn-danger" onclick="bloquearFecha()">🔴 Bloquear</button>
-            <button class="btn btn-success" onclick="desbloquearFecha()">🟢 Desbloquear</button>
+            <button class="btn btn-danger" onclick="bloquearFecha()">🔴 Bloquear Día</button>
+            <button class="btn btn-success" onclick="desbloquearFecha()">🟢 Desbloquear Día</button>
             <button class="btn" onclick="mostrarModalPrecio()">💰 Precio</button>
+            <button class="btn" style="background: #9c27b0;" onclick="bloquearRangoObligatorio()">🔒 Bloqueo Obligatorio</button>
+            <button class="btn" style="background: #ff9800;" onclick="limpiarRangoAdmin()">✖️ Limpiar Selección</button>
             <button class="btn btn-secondary" onclick="cerrarActionMenu()">✖️ Cerrar</button>
         </div>
     </div>
