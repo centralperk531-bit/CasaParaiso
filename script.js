@@ -775,21 +775,23 @@ async function verificarPassword(event) {
     const password = document.getElementById('passwordAdmin').value;
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
-        document.getElementById('adminPanel').classList.add('show');
         
-        // Activar modo admin en el body
+        // PRIMERO: Activar clase en body
         document.body.classList.add('modo-admin');
         
-        // Forzar mostrar el calendario grande
+        // SEGUNDO: Mostrar panel admin
+        document.getElementById('adminPanel').classList.add('show');
+        
+        // TERCERO: Forzar visibilidad del calendario con !important en JS
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) {
-            seccionDisp.style.display = 'block';
+            seccionDisp.style.setProperty('display', 'block', 'important');
         }
         
-        // Ocultar la sección de reserva completa
+        // CUARTO: Ocultar la sección de reserva
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) {
-            seccionReserva.style.display = 'none';
+            seccionReserva.style.setProperty('display', 'none', 'important');
         }
         
         cerrarModal('modalLoginAdmin');
@@ -797,6 +799,9 @@ async function verificarPassword(event) {
         
         await cargarDatosGoogle();
         generarCalendario();
+        
+        console.log('✅ Modo admin activado');
+        console.log('Calendario visible:', seccionDisp ? seccionDisp.style.display : 'NO ENCONTRADO');
         
         mostrarAlerta('✔ Modo admin activado. Usa botón derecho en el calendario.', 'success');
     } else {
@@ -806,21 +811,27 @@ async function verificarPassword(event) {
 
 function cerrarAdmin() {
     modoAdmin = false;
-    document.getElementById('adminPanel').classList.remove('show');
+    
+    // Quitar clase del body
     document.body.classList.remove('modo-admin');
+    
+    // Ocultar panel admin
+    document.getElementById('adminPanel').classList.remove('show');
     
     // Restaurar calendario según pantalla
     const seccionDisp = document.getElementById('seccionDisponibilidad');
-    if (seccionDisp && window.innerWidth >= 768) {
-        seccionDisp.style.display = 'none';
-    } else if (seccionDisp) {
-        seccionDisp.style.display = 'block';
+    if (seccionDisp) {
+        if (window.innerWidth >= 768) {
+            seccionDisp.style.setProperty('display', 'none', 'important');
+        } else {
+            seccionDisp.style.setProperty('display', 'block', 'important');
+        }
     }
     
     // Mostrar de nuevo la sección de reserva
     const seccionReserva = document.querySelector('.section:has(#reservaForm)');
     if (seccionReserva) {
-        seccionReserva.style.display = 'block';
+        seccionReserva.style.removeProperty('display');
     }
     
     generarCalendario();
