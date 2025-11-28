@@ -352,6 +352,15 @@ header p {
     }
 }
 
+/* ===== MODO ADMIN ===== */
+body.modo-admin #seccionDisponibilidad {
+    display: block !important;
+}
+
+body.modo-admin .section:has(#reservaForm) {
+    display: none !important;
+}
+
 /* ===== BOTONES ===== */
 .btn {
     background: var(--color-principal);
