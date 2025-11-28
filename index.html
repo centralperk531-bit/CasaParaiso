@@ -1418,6 +1418,7 @@
 
         function generarCalendario() {
             console.log('📅 === GENERANDO CALENDARIO ===');
+            console.log('🔧 Modo admin:', modoAdmin);
             
             const año = mesActual.getFullYear();
             const mes = mesActual.getMonth();
@@ -1429,21 +1430,45 @@
             
             // Actualizar ambos títulos de mes
             const mesActualEl = document.getElementById('mesActual');
-            if (mesActualEl) mesActualEl.textContent = mesTexto;
+            if (mesActualEl) {
+                mesActualEl.textContent = mesTexto;
+                console.log('✅ Título calendario grande actualizado');
+            } else {
+                console.error('❌ No se encuentra #mesActual');
+            }
             
             const mesReserva = document.getElementById('mesActualReserva');
-            if (mesReserva) mesReserva.textContent = mesTexto;
+            if (mesReserva) {
+                mesReserva.textContent = mesTexto;
+                console.log('✅ Título calendario formulario actualizado');
+            }
             
             // Generar calendario principal (para móvil y admin)
             const calendarioPrincipal = document.getElementById('calendario');
             if (calendarioPrincipal) {
+                console.log('📅 Generando calendario principal (grande)...');
                 generarCalendarioEnElemento('calendario', año, mes, true); // true = permitir admin
+                console.log('✅ Calendario principal generado');
+            } else {
+                console.error('❌ No se encuentra #calendario');
             }
             
             // Generar calendario del formulario (solo para selección)
             const calendarioReserva = document.getElementById('calendarioReserva');
             if (calendarioReserva) {
+                console.log('📅 Generando calendario formulario (pequeño)...');
                 generarCalendarioEnElemento('calendarioReserva', año, mes, false); // false = no admin
+                console.log('✅ Calendario formulario generado');
+            }
+            
+            // Verificar visibilidad
+            const seccion = document.getElementById('seccionDisponibilidad');
+            if (seccion) {
+                const estiloComputado = window.getComputedStyle(seccion);
+                console.log('👁️ Sección calendario grande:');
+                console.log('   - display:', estiloComputado.display);
+                console.log('   - visibility:', estiloComputado.visibility);
+                console.log('   - opacity:', estiloComputado.opacity);
             }
             
             console.log('✅ === CALENDARIO GENERADO ===');
