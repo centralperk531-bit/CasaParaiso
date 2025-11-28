@@ -337,7 +337,8 @@ header p {
         top: 1rem;
     }
     
-    #seccionDisponibilidad {
+    /* Solo ocultar en desktop SI NO ESTAMOS en modo admin */
+    body:not(.modo-admin) #seccionDisponibilidad {
         display: none !important;
     }
 }
@@ -352,7 +353,7 @@ header p {
     }
 }
 
-/* ===== MODO ADMIN ===== */
+/* ===== MODO ADMIN - FORZAR VISIBILIDAD ===== */
 body.modo-admin #seccionDisponibilidad {
     display: block !important;
 }
