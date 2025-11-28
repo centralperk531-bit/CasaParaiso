@@ -777,20 +777,27 @@ async function verificarPassword(event) {
         modoAdmin = true;
         document.getElementById('adminPanel').classList.add('show');
         
+        // Activar modo admin en el body
+        document.body.classList.add('modo-admin');
+        
+        // Forzar mostrar el calendario grande
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) {
             seccionDisp.style.display = 'block';
-            seccionDisp.style.removeProperty('display');
         }
         
-        document.body.classList.add('modo-admin');
+        // Ocultar la sección de reserva completa
+        const seccionReserva = document.querySelector('.section:has(#reservaForm)');
+        if (seccionReserva) {
+            seccionReserva.style.display = 'none';
+        }
         
         cerrarModal('modalLoginAdmin');
         document.getElementById('passwordAdmin').value = '';
         
         await cargarDatosGoogle();
-        
         generarCalendario();
+        
         mostrarAlerta('✔ Modo admin activado. Usa botón derecho en el calendario.', 'success');
     } else {
         mostrarAlerta('Contraseña incorrecta', 'error');
@@ -802,9 +809,18 @@ function cerrarAdmin() {
     document.getElementById('adminPanel').classList.remove('show');
     document.body.classList.remove('modo-admin');
     
+    // Restaurar calendario según pantalla
     const seccionDisp = document.getElementById('seccionDisponibilidad');
     if (seccionDisp && window.innerWidth >= 768) {
         seccionDisp.style.display = 'none';
+    } else if (seccionDisp) {
+        seccionDisp.style.display = 'block';
+    }
+    
+    // Mostrar de nuevo la sección de reserva
+    const seccionReserva = document.querySelector('.section:has(#reservaForm)');
+    if (seccionReserva) {
+        seccionReserva.style.display = 'block';
     }
     
     generarCalendario();
