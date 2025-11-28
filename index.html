@@ -663,15 +663,15 @@
             </div>
         </section>
 
-        <section class="section" style="display: none;" id="seccionDisponibilidad">
-            <h2>📅 Disponibilidad</h2>
+        <section class="section" id="seccionDisponibilidad">
+            <h2>📅 Calendario Admin</h2>
             <p style="text-align: center; color: var(--color-secundario); margin-bottom: 0.6rem; font-size: 0.8rem;">
-                Toca entrada y salida | <span style="color: #dc3545; cursor: pointer; font-weight: bold;" onclick="limpiarFechas()">✖️ Limpiar</span>
+                <strong>Botón derecho</strong> (PC) o <strong>mantén pulsado</strong> (móvil) para bloquear/desbloquear
             </p>
             <div class="month-selector">
-                <button onclick="cambiarMes(-1)">◀</button>
+                <button type="button" onclick="cambiarMes(-1)">◀</button>
                 <h3 id="mesActual"></h3>
-                <button onclick="cambiarMes(1)">▶</button>
+                <button type="button" onclick="cambiarMes(1)">▶</button>
             </div>
             <div class="calendar-wrapper">
                 <div class="calendar" id="calendario"></div>
@@ -914,8 +914,8 @@
         const CONFIG = {
             nombreCampo: "El Campo",
             descripcion: "Tu escapada rural perfecta",
-            capacidad: "15 personas",
-            precioPorNoche: 200,
+            capacidad: "6 personas",
+            precioPorNoche: 120,
             estanciaMinima: 2,
             señalPorcentaje: 30,
             tuEmail: "centralperk.531@gmail.com",
@@ -1842,17 +1842,19 @@
             const password = document.getElementById('passwordAdmin').value;
             if (password === ADMIN_PASSWORD) {
                 modoAdmin = true;
+                
+                // Añadir clase al body PRIMERO
+                document.body.classList.add('modo-admin');
+                
+                // Mostrar panel admin
                 document.getElementById('adminPanel').classList.add('show');
                 
-                // EN ADMIN: Mostrar SIEMPRE el calendario grande (para botón derecho)
+                // Forzar visibilidad del calendario grande
                 const seccionDisp = document.getElementById('seccionDisponibilidad');
                 if (seccionDisp) {
                     seccionDisp.style.display = 'block';
-                    seccionDisp.style.removeProperty('display'); // Permitir que CSS tome control
+                    console.log('✅ Calendario grande forzado a visible');
                 }
-                
-                // Añadir clase especial al body para forzar visibilidad
-                document.body.classList.add('modo-admin');
                 
                 cerrarModal('modalLoginAdmin');
                 document.getElementById('passwordAdmin').value = '';
@@ -1860,7 +1862,11 @@
                 await cargarDatosGoogle();
                 
                 generarCalendario();
-                mostrarAlerta('✓ Modo admin activado. Usa botón derecho en el calendario.', 'success');
+                mostrarAlerta('✓ Modo admin activado. Usa botón derecho en calendario grande.', 'success');
+                
+                console.log('🔧 Modo admin activado');
+                console.log('📅 Calendario grande visible:', seccionDisp ? 'SÍ' : 'NO');
+                console.log('🎨 Body tiene clase modo-admin:', document.body.classList.contains('modo-admin'));
             } else {
                 mostrarAlerta('Contraseña incorrecta', 'error');
             }
@@ -1871,10 +1877,12 @@
             document.getElementById('adminPanel').classList.remove('show');
             document.body.classList.remove('modo-admin');
             
-            // Restaurar comportamiento normal del calendario
-            const seccionDisp = document.getElementById('seccionDisponibilidad');
-            if (seccionDisp && window.innerWidth >= 768) {
-                seccionDisp.style.display = 'none';
+            // En PC, ocultar calendario grande
+            if (window.innerWidth >= 768) {
+                const seccionDisp = document.getElementById('seccionDisponibilidad');
+                if (seccionDisp) {
+                    seccionDisp.style.display = 'none';
+                }
             }
             
             generarCalendario();
