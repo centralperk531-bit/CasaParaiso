@@ -1121,6 +1121,48 @@ document.getElementById('reservaForm').addEventListener('submit', async function
         loader.style.display = 'none';
     }
 });
+// AÑADE ESTA FUNCIÓN a tu código de Apps Script
+
+function obtenerBloqueosObligatorios() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('BloqueosObligatorios');
+  if (!sheet) {
+    // Crear hoja si no existe
+    SpreadsheetApp.getActiveSpreadsheet().insertSheet('BloqueosObligatorios');
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      bloqueos: {}
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  const bloqueos = {};
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] && data[i][1]) {
+      bloqueos[data[i][0]] = data[i][1];
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true,
+    bloqueos: bloqueos
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function guardarBloqueoObligatorio(fechaInicio, fechaFin) {
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('BloqueosObligatorios');
+  
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('BloqueosObligatorios');
+    sheet.appendRow(['Fecha Inicio', 'Fecha Fin']);
+  }
+  
+  sheet.appendRow([fechaInicio, fechaFin]);
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true
+  })).setMimeType(ContentService.MimeType.JSON);
+}
 
 // ===== CARGAR AL INICIO =====
 window.addEventListener('DOMContentLoaded', function() {
