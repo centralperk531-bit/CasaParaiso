@@ -987,9 +987,29 @@
                 }
                 
                 if (dataPrecios.success) {
-                    preciosPersonalizados = dataPrecios.precios || {};
+                    const preciosRaw = dataPrecios.precios || {};
+                    preciosPersonalizados = {};
+                    
+                    // Convertir claves a formato correcto
+                    for (let key in preciosRaw) {
+                        // Si la clave es una fecha en formato extraño, convertirla
+                        let fechaLimpia = key;
+                        if (key.includes('GMT') || key.includes('00:00:00')) {
+                            // Es un objeto Date convertido a string, extraer la fecha
+                            const match = key.match(/(\w{3}) (\w{3}) (\d{2}) (\d{4})/);
+                            if (match) {
+                                const fecha = new Date(key);
+                                const year = fecha.getFullYear();
+                                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                                const dia = String(fecha.getDate()).padStart(2, '0');
+                                fechaLimpia = year + '-' + mes + '-' + dia;
+                            }
+                        }
+                        preciosPersonalizados[fechaLimpia] = preciosRaw[key];
+                    }
+                    
                     console.log('✅ Precios personalizados cargados:', Object.keys(preciosPersonalizados).length);
-                    console.log('📊 Precios:', preciosPersonalizados);
+                    console.log('📊 Precios corregidos:', preciosPersonalizados);
                 } else {
                     console.error('❌ Error al obtener precios:', dataPrecios.message);
                     preciosPersonalizados = {};
@@ -1874,11 +1894,13 @@
                 // Mostrar panel admin
                 document.getElementById('adminPanel').classList.add('show');
                 
-                // Forzar visibilidad del calendario grande
+                // FORZAR visibilidad del calendario grande con !important inline
                 const seccionDisp = document.getElementById('seccionDisponibilidad');
                 if (seccionDisp) {
-                    seccionDisp.style.display = 'block';
-                    console.log('✅ Calendario grande forzado a visible');
+                    seccionDisp.style.setProperty('display', 'block', 'important');
+                    seccionDisp.style.setProperty('background', '#fff3cd', 'important');
+                    seccionDisp.style.setProperty('border', '3px solid #ffc107', 'important');
+                    console.log('✅ Calendario grande forzado con !important inline');
                 }
                 
                 cerrarModal('modalLoginAdmin');
@@ -1887,7 +1909,14 @@
                 await cargarDatosGoogle();
                 
                 generarCalendario();
-                mostrarAlerta('✓ Modo admin activado. Usa botón derecho en calendario grande.', 'success');
+                
+                // Verificar después de generar
+                setTimeout(() => {
+                    const estilo = window.getComputedStyle(seccionDisp);
+                    console.log('🔍 VERIFICACIÓN FINAL - display:', estilo.display);
+                }, 100);
+                
+                mostrarAlerta('✓ Admin ON. Botón derecho en calendario amarillo.', 'success');
                 
                 console.log('🔧 Modo admin activado');
                 console.log('📅 Calendario grande visible:', seccionDisp ? 'SÍ' : 'NO');
