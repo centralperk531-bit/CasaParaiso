@@ -37,7 +37,7 @@ let touchTimer = null;
 let fechaEntradaSeleccionada = null;
 let rangoAdminInicio = null;
 let rangoAdminFin = null;
-let bloqueosObligatorios = {}; // {inicio: fin} - rangos que deben reservarse completos
+let paquetesObligatorios = []; // [{inicio: "2025-01-10", fin: "2025-01-20"}]
 
 // ===== INICIALIZACIÓN =====
 emailjs.init(EMAILJS_CONFIG.publicKey);
@@ -64,18 +64,18 @@ document.getElementById('totalReservas').textContent = reservas.length;
 
 async function cargarDatosGoogle() {
     try {
-        const [resFechas, resPrecios, resReservas, resBloqueosOblig] = await Promise.all([
+        const [resFechas, resPrecios, resReservas, resPaquetes] = await Promise.all([
             fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerFechasBloqueadas'),
             fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerPrecios'),
             fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerReservas'),
-            fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerBloqueosObligatorios')
+            fetch(GOOGLE_SCRIPT_URL + '?accion=obtenerPaquetesObligatorios')
         ]);
         
-        const [dataFechas, dataPrecios, dataReservas, dataBloqueosOblig] = await Promise.all([
+        const [dataFechas, dataPrecios, dataReservas, dataPaquetes] = await Promise.all([
             resFechas.json(),
             resPrecios.json(),
             resReservas.json(),
-            resBloqueosOblig.json()
+            resPaquetes.json()
         ]);
         
         if (dataFechas.success) {
@@ -88,9 +88,12 @@ async function cargarDatosGoogle() {
             console.log('✅ Precios personalizados:', Object.keys(preciosPersonalizados).length);
         }
         
-        if (dataBloqueosOblig.success) {
-            bloqueosObligatorios = dataBloqueosOblig.bloqueos || {};
-            console.log('✅ Bloqueos obligatorios:', Object.keys(bloqueosObligatorios).length);
+        if (dataPaquetes.success) {
+            paquetesObligatorios = dataPaquetes.paquetes || [];
+            console.log('✅ Paquetes obligatorios:', paquetesObligatorios.length);
+            if (modoAdmin) {
+                mostrarListadoPaquetes();
+            }
         }
         
         if (dataReservas.success) {
@@ -267,6 +270,131 @@ async function moverReservaEliminada(reserva) {
 // ===== FUNCIONES DE ADMIN - SELECCIÓN DE RANGO =====
 
 function seleccionarRangoAdmin(fecha) {
+    if (!rangoAdminInicio) {
+        // Primera fecha seleccionada
+        rangoAdminInicio = fecha;
+        rangoAdminFin = null;
+        document.getElementById('panelRangoAdmin').style.display = 'none';
+        generarCalendario();
+        mostrarAlerta('✔ Inicio seleccionado: ' + fecha + '. Ahora selecciona el fin del rango', 'success');
+    } else if (!rangoAdminFin) {
+        // Segunda fecha seleccionada
+        if (fecha > rangoAdminInicio) {
+            rangoAdminFin = fecha;
+            document.getElementById('rangoTexto').textContent = rangoAdminInicio + ' → ' + rangoAdminFin;
+            document.getElementById('panelRangoAdmin').style.display = 'block';
+            generarCalendario();
+            mostrarAlerta('✔ Rango seleccionado. Usa los botones arriba para acciones', 'success');
+        } else {
+            // Si es anterior, reiniciar
+            rangoAdminInicio = fecha;
+            rangoAdminFin = null;
+            document.getElementById('panelRangoAdmin').style.display = 'none';
+            generarCalendario();
+            mostrarAlerta('✔ Nuevo inicio: ' + fecha + '. Selecciona el fin del rango', 'success');
+        }
+    } else {
+        // Ya había un rango, reiniciar
+        rangoAdminInicio = fecha;
+        rangoAdminFin = null;
+        document.getElementById('panelRangoAdmin').style.display = 'none';
+        generarCalendario();
+        mostrarAlerta('✔ Rango limpiado. Nuevo inicio: ' + fecha, 'success');
+    }
+}
+
+function limpiarRangoAdmin() {
+    rangoAdminInicio = null;
+    rangoAdminFin = null;
+    document.getElementById('panelRangoAdmin').style.display = 'none';
+    generarCalendario();
+    mostrarAlerta('✔ Selección limpiada', 'success');
+}
+
+async function bloquearRangoCompleto() {
+    if (!rangoAdminInicio || !rangoAdminFin) {
+        mostrarAlerta('❌ Error: no hay rango seleccionado', 'error');
+        return;
+    }
+    
+    if (!confirm(`¿Bloquear todas las fechas del ${rangoAdminInicio} al ${rangoAdminFin}?`)) {
+        return;
+    }
+    
+    mostrarAlerta('⏳ Bloqueando rango...', 'success');
+    
+    // Generar todas las fechas del rango
+    const fechasABloquear = [];
+    const [yearIni, mesIni, diaIni] = rangoAdminInicio.split('-').map(Number);
+    const [yearFin, mesFin, diaFin] = rangoAdminFin.split('-').map(Number);
+    const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
+    const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
+    
+    for (let d = new Date(fechaInicio); d <= fechaFin; d.setDate(d.getDate() + 1)) {
+        const year = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        const fechaStr = year + '-' + mes + '-' + dia;
+        if (!fechasBloqueadas.includes(fechaStr)) {
+            fechasABloquear.push(fechaStr);
+        }
+    }
+    
+    const exito = await bloquearRangoGoogle(fechasABloquear);
+    
+    if (exito) {
+        fechasBloqueadas.push(...fechasABloquear);
+        limpiarRangoAdmin();
+        await cargarDatosGoogle();
+        mostrarAlerta('✔ Bloqueadas ' + fechasABloquear.length + ' fechas', 'success');
+    } else {
+        mostrarAlerta('❌ Error al bloquear rango', 'error');
+    }
+}
+
+async function desbloquearRangoCompleto() {
+    if (!rangoAdminInicio || !rangoAdminFin) {
+        mostrarAlerta('❌ Error: no hay rango seleccionado', 'error');
+        return;
+    }
+    
+    if (!confirm(`¿Desbloquear todas las fechas del ${rangoAdminInicio} al ${rangoAdminFin}?`)) {
+        return;
+    }
+    
+    mostrarAlerta('⏳ Desbloqueando rango...', 'success');
+    
+    // Generar todas las fechas del rango
+    const [yearIni, mesIni, diaIni] = rangoAdminInicio.split('-').map(Number);
+    const [yearFin, mesFin, diaFin] = rangoAdminFin.split('-').map(Number);
+    const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
+    const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
+    
+    const promesas = [];
+    let desbloqueadas = 0;
+    
+    for (let d = new Date(fechaInicio); d <= fechaFin; d.setDate(d.getDate() + 1)) {
+        const year = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        const fechaStr = year + '-' + mes + '-' + dia;
+        
+        const idx = fechasBloqueadas.indexOf(fechaStr);
+        if (idx > -1) {
+            fechasBloqueadas.splice(idx, 1);
+            promesas.push(eliminarFechaBloqueada(fechaStr));
+            desbloqueadas++;
+        }
+    }
+    
+    if (promesas.length > 0) {
+        await Promise.all(promesas);
+    }
+    
+    limpiarRangoAdmin();
+    await cargarDatosGoogle();
+    mostrarAlerta('✔ Desbloqueadas ' + desbloqueadas + ' fechas', 'success');
+}(fecha) {
     if (!rangoAdminInicio) {
         // Primera fecha seleccionada
         rangoAdminInicio = fecha;
@@ -650,17 +778,27 @@ function generarCalendarioEnElemento(idElemento, año, mes, permitirAdmin) {
             diaDiv.classList.add('selected');
         }
         
+        // Marcar días que pertenecen a un paquete obligatorio
+        const perteneceAPaquete = paquetesObligatorios.some(paq => 
+            fechaStr >= paq.inicio && fechaStr <= paq.fin
+        );
+        if (perteneceAPaquete && !esBloqueado) {
+            diaDiv.classList.add('paquete');
+        }
+        
         if (fecha >= hoy) {
             if (modoAdmin && permitirAdmin && idElemento === 'calendario') {
                 // Click normal para seleccionar rango
                 diaDiv.addEventListener('click', function(e) {
                     e.preventDefault();
+                    console.log('🖱️ Click detectado en día admin:', fechaStr);
                     seleccionarRangoAdmin(fechaStr);
                 });
                 
-                // Click derecho / mantener para menú de acciones
+                // Click derecho / mantener para menú de acciones (días individuales)
                 diaDiv.addEventListener('contextmenu', function(e) {
                     e.preventDefault();
+                    console.log('🖱️ Click derecho detectado:', fechaStr);
                     mostrarActionMenu(fechaStr);
                     return false;
                 });
@@ -714,21 +852,19 @@ function seleccionarFechaCliente(fecha) {
         }
     }
     
+    // Buscar si la fecha pertenece a un paquete obligatorio
+    const paquete = paquetesObligatorios.find(paq => fecha >= paq.inicio && fecha <= paq.fin);
+    
     if (!fechaEntradaSeleccionada) {
-        // Verificar si la fecha está en un bloqueo obligatorio
-        const bloqueoOblig = Object.keys(bloqueosObligatorios).find(inicio => {
-            const fin = bloqueosObligatorios[inicio];
-            return fecha >= inicio && fecha <= fin;
-        });
-        
-        if (bloqueoOblig) {
-            const fin = bloqueosObligatorios[bloqueoOblig];
-            entrada.value = bloqueoOblig;
-            salida.value = fin;
-            fechaEntradaSeleccionada = bloqueoOblig;
+        // Primera selección
+        if (paquete) {
+            // Si está en un paquete, seleccionar automáticamente todo el paquete
+            entrada.value = paquete.inicio;
+            salida.value = paquete.fin;
+            fechaEntradaSeleccionada = paquete.inicio;
             calcularResumen();
             generarCalendario();
-            mostrarAlerta('✔ Rango obligatorio seleccionado: ' + bloqueoOblig + ' → ' + fin, 'success');
+            mostrarAlerta('📦 Paquete completo seleccionado: ' + paquete.inicio + ' → ' + paquete.fin, 'success');
             return;
         }
         
@@ -738,19 +874,32 @@ function seleccionarFechaCliente(fecha) {
         generarCalendario();
         mostrarAlerta('✔ Entrada seleccionada. Ahora selecciona salida', 'success');
     } else {
+        // Segunda selección
         if (fecha > fechaEntradaSeleccionada) {
-            // Verificar si el rango cruza un bloqueo obligatorio
-            const bloqueoEnMedio = Object.keys(bloqueosObligatorios).find(inicio => {
-                const fin = bloqueosObligatorios[inicio];
-                return (fechaEntradaSeleccionada < inicio && fecha > inicio) || 
-                       (fechaEntradaSeleccionada < fin && fecha > fin);
+            // Verificar si alguna fecha del rango está en un paquete obligatorio
+            const paqueteEnRango = paquetesObligatorios.find(paq => {
+                return (fechaEntradaSeleccionada >= paq.inicio && fechaEntradaSeleccionada <= paq.fin) ||
+                       (fecha >= paq.inicio && fecha <= paq.fin) ||
+                       (fechaEntradaSeleccionada < paq.inicio && fecha > paq.inicio);
             });
             
-            if (bloqueoEnMedio) {
-                mostrarAlerta('❌ No puedes reservar parcialmente un rango obligatorio', 'error');
+            if (paqueteEnRango) {
+                // Verificar si coincide exactamente con el paquete
+                if (fechaEntradaSeleccionada === paqueteEnRango.inicio && fecha === paqueteEnRango.fin) {
+                    // Perfecto, reserva el paquete completo
+                    salida.value = fecha;
+                    calcularResumen();
+                    generarCalendario();
+                    mostrarAlerta('✔ Fechas seleccionadas', 'success');
+                } else {
+                    // No coincide, mostrar error
+                    mostrarAlerta('❌ Este rango contiene un paquete obligatorio (' + paqueteEnRango.inicio + ' → ' + paqueteEnRango.fin + '). Debes reservarlo completo.', 'error');
+                    limpiarFechas();
+                }
                 return;
             }
             
+            // No hay paquetes en el rango, permitir selección normal
             salida.value = fecha;
             calcularResumen();
             generarCalendario();
@@ -866,6 +1015,8 @@ async function verificarPassword(event) {
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
         
+        console.log('🔐 Activando modo admin...');
+        
         // PRIMERO: Activar clase en body
         document.body.classList.add('modo-admin');
         
@@ -876,12 +1027,16 @@ async function verificarPassword(event) {
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) {
             seccionDisp.style.setProperty('display', 'block', 'important');
+            console.log('✅ Calendario visible');
+        } else {
+            console.error('❌ No se encuentra #seccionDisponibilidad');
         }
         
         // CUARTO: Ocultar la sección de reserva
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) {
             seccionReserva.style.setProperty('display', 'none', 'important');
+            console.log('✅ Formulario oculto');
         }
         
         cerrarModal('modalLoginAdmin');
@@ -890,10 +1045,18 @@ async function verificarPassword(event) {
         await cargarDatosGoogle();
         generarCalendario();
         
-        console.log('✅ Modo admin activado');
-        console.log('Calendario visible:', seccionDisp ? seccionDisp.style.display : 'NO ENCONTRADO');
+        // DEBUG: Verificar que el calendario existe y tiene días
+        const calendario = document.getElementById('calendario');
+        if (calendario) {
+            const dias = calendario.querySelectorAll('.calendar-day');
+            console.log('✅ Calendario encontrado con', dias.length, 'días');
+            console.log('🔍 ModoAdmin:', modoAdmin);
+            console.log('🔍 Primer día tiene eventos:', dias[0] ? 'sí' : 'no');
+        } else {
+            console.error('❌ No se encuentra #calendario');
+        }
         
-        mostrarAlerta('✔ Modo admin activado. Usa botón derecho en el calendario.', 'success');
+        mostrarAlerta('✔ Modo admin activado. Haz CLICK en 2 fechas para crear paquete', 'success');
     } else {
         mostrarAlerta('Contraseña incorrecta', 'error');
     }
@@ -1121,48 +1284,6 @@ document.getElementById('reservaForm').addEventListener('submit', async function
         loader.style.display = 'none';
     }
 });
-// AÑADE ESTA FUNCIÓN a tu código de Apps Script
-
-function obtenerBloqueosObligatorios() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('BloqueosObligatorios');
-  if (!sheet) {
-    // Crear hoja si no existe
-    SpreadsheetApp.getActiveSpreadsheet().insertSheet('BloqueosObligatorios');
-    return ContentService.createTextOutput(JSON.stringify({
-      success: true,
-      bloqueos: {}
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-  
-  const data = sheet.getDataRange().getValues();
-  const bloqueos = {};
-  
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][1]) {
-      bloqueos[data[i][0]] = data[i][1];
-    }
-  }
-  
-  return ContentService.createTextOutput(JSON.stringify({
-    success: true,
-    bloqueos: bloqueos
-  })).setMimeType(ContentService.MimeType.JSON);
-}
-
-function guardarBloqueoObligatorio(fechaInicio, fechaFin) {
-  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('BloqueosObligatorios');
-  
-  if (!sheet) {
-    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('BloqueosObligatorios');
-    sheet.appendRow(['Fecha Inicio', 'Fecha Fin']);
-  }
-  
-  sheet.appendRow([fechaInicio, fechaFin]);
-  
-  return ContentService.createTextOutput(JSON.stringify({
-    success: true
-  })).setMimeType(ContentService.MimeType.JSON);
-}
 
 // ===== CARGAR AL INICIO =====
 window.addEventListener('DOMContentLoaded', function() {
