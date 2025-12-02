@@ -1,7 +1,5 @@
 // ===== CONFIGURACIÓN =====
 const ADMIN_PASSWORD = "micampo2025";
-
-// 🔥 CAMBIA ESTA URL POR LA TUYA
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_llWLzIYpMB6q6gxYh_szhQscNj7tBVA3EtVn0CuNSKICyXv2kPKAoYDRHqrEZD9t/exec";
 
 const CONFIG = {
@@ -37,7 +35,7 @@ let touchTimer = null;
 let fechaEntradaSeleccionada = null;
 let rangoAdminInicio = null;
 let rangoAdminFin = null;
-let paquetesObligatorios = []; // [{inicio: "2025-01-10", fin: "2025-01-20"}]
+let paquetesObligatorios = [];
 
 // ===== INICIALIZACIÓN =====
 emailjs.init(EMAILJS_CONFIG.publicKey);
@@ -129,20 +127,12 @@ async function cargarDatosGoogle() {
 
 async function guardarFechaBloqueada(fecha) {
     try {
-        console.log('🔒 Bloqueando fecha:', fecha);
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
-                accion: 'bloquearFecha',
-                fecha: fecha
-            })
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ accion: 'bloquearFecha', fecha: fecha })
         });
-        
         const data = await response.json();
-        console.log('📥 Respuesta bloquear:', data);
         return data.success;
     } catch (error) {
         console.error('❌ Error bloquear:', error);
@@ -152,20 +142,12 @@ async function guardarFechaBloqueada(fecha) {
 
 async function eliminarFechaBloqueada(fecha) {
     try {
-        console.log('🔓 Desbloqueando fecha:', fecha);
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
-                accion: 'desbloquearFecha',
-                fecha: fecha
-            })
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ accion: 'desbloquearFecha', fecha: fecha })
         });
-        
         const data = await response.json();
-        console.log('📥 Respuesta desbloquear:', data);
         return data.success;
     } catch (error) {
         console.error('❌ Error desbloquear:', error);
@@ -175,21 +157,12 @@ async function eliminarFechaBloqueada(fecha) {
 
 async function guardarPrecioGoogle(fecha, precio) {
     try {
-        console.log('💰 Guardando precio:', fecha, precio);
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
-                accion: 'guardarPrecio',
-                fecha: fecha,
-                precio: parseFloat(precio)
-            })
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ accion: 'guardarPrecio', fecha: fecha, precio: parseFloat(precio) })
         });
-        
         const data = await response.json();
-        console.log('📥 Respuesta precio:', data);
         return data.success;
     } catch (error) {
         console.error('❌ Error precio:', error);
@@ -199,20 +172,12 @@ async function guardarPrecioGoogle(fecha, precio) {
 
 async function guardarReservaGoogle(reserva) {
     try {
-        console.log('📝 Guardando reserva:', reserva);
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
-                accion: 'guardarReserva',
-                ...reserva
-            })
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ accion: 'guardarReserva', ...reserva })
         });
-        
         const data = await response.json();
-        console.log('📥 Respuesta reserva:', data);
         return data.success;
     } catch (error) {
         console.error('❌ Error reserva:', error);
@@ -222,21 +187,16 @@ async function guardarReservaGoogle(reserva) {
 
 async function bloquearRangoGoogle(fechas) {
     try {
-        console.log('🔒 Bloqueando rango de', fechas.length, 'fechas:', fechas);
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 accion: 'bloquearRango',
                 fechas: fechas,
                 dni: reservas.find(r => r.fechaEntrada && fechas.includes(r.fechaEntrada.split('T')[0]))?.dni
             })
         });
-        
         const data = await response.json();
-        console.log('📥 Respuesta bloquear rango:', data);
         return data.success;
     } catch (error) {
         console.error('❌ Error bloquear rango:', error);
@@ -248,18 +208,14 @@ async function moverReservaEliminada(reserva) {
     try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 accion: 'moverReservaEliminada',
                 reserva: reserva,
                 fechaEliminacion: new Date().toLocaleString('es-ES')
             })
         });
-        
         const data = await response.json();
-        console.log('📥 Respuesta mover eliminada:', data);
         return data.success;
     } catch (error) {
         console.error('❌ Error mover eliminada:', error);
@@ -267,172 +223,180 @@ async function moverReservaEliminada(reserva) {
     }
 }
 
-// ===== FUNCIONES DE ADMIN - SELECCIÓN DE RANGO =====
+// ===== PAQUETES OBLIGATORIOS =====
 
-function seleccionarRangoAdmin(fecha) {
-    if (!rangoAdminInicio) {
-        // Primera fecha seleccionada
-        rangoAdminInicio = fecha;
-        rangoAdminFin = null;
-        document.getElementById('panelRangoAdmin').style.display = 'none';
-        generarCalendario();
-        mostrarAlerta('✔ Inicio seleccionado: ' + fecha + '. Ahora selecciona el fin del rango', 'success');
-    } else if (!rangoAdminFin) {
-        // Segunda fecha seleccionada
-        if (fecha > rangoAdminInicio) {
-            rangoAdminFin = fecha;
-            document.getElementById('rangoTexto').textContent = rangoAdminInicio + ' → ' + rangoAdminFin;
-            document.getElementById('panelRangoAdmin').style.display = 'block';
-            generarCalendario();
-            mostrarAlerta('✔ Rango seleccionado. Usa los botones arriba para acciones', 'success');
-        } else {
-            // Si es anterior, reiniciar
-            rangoAdminInicio = fecha;
-            rangoAdminFin = null;
-            document.getElementById('panelRangoAdmin').style.display = 'none';
-            generarCalendario();
-            mostrarAlerta('✔ Nuevo inicio: ' + fecha + '. Selecciona el fin del rango', 'success');
-        }
-    } else {
-        // Ya había un rango, reiniciar
-        rangoAdminInicio = fecha;
-        rangoAdminFin = null;
-        document.getElementById('panelRangoAdmin').style.display = 'none';
-        generarCalendario();
-        mostrarAlerta('✔ Rango limpiado. Nuevo inicio: ' + fecha, 'success');
-    }
-}
-
-function limpiarRangoAdmin() {
-    rangoAdminInicio = null;
-    rangoAdminFin = null;
-    document.getElementById('panelRangoAdmin').style.display = 'none';
-    generarCalendario();
-    mostrarAlerta('✔ Selección limpiada', 'success');
-}
-
-async function bloquearRangoCompleto() {
+async function crearPaqueteObligatorio() {
     if (!rangoAdminInicio || !rangoAdminFin) {
-        mostrarAlerta('❌ Error: no hay rango seleccionado', 'error');
+        mostrarAlerta('❌ Selecciona 2 fechas primero', 'error');
         return;
     }
     
-    if (!confirm(`¿Bloquear todas las fechas del ${rangoAdminInicio} al ${rangoAdminFin}?`)) {
+    const solapa = paquetesObligatorios.some(paq => {
+        return (rangoAdminInicio >= paq.inicio && rangoAdminInicio <= paq.fin) ||
+               (rangoAdminFin >= paq.inicio && rangoAdminFin <= paq.fin) ||
+               (rangoAdminInicio <= paq.inicio && rangoAdminFin >= paq.fin);
+    });
+    
+    if (solapa) {
+        mostrarAlerta('❌ Se solapa con otro paquete', 'error');
         return;
     }
     
-    mostrarAlerta('⏳ Bloqueando rango...', 'success');
+    if (!confirm(`📦 Crear paquete:\n${rangoAdminInicio} → ${rangoAdminFin}\n\nClientes deben reservar completo.`)) return;
     
-    // Generar todas las fechas del rango
-    const fechasABloquear = [];
-    const [yearIni, mesIni, diaIni] = rangoAdminInicio.split('-').map(Number);
-    const [yearFin, mesFin, diaFin] = rangoAdminFin.split('-').map(Number);
-    const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
-    const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
+    mostrarAlerta('⏳ Creando...', 'success');
     
-    for (let d = new Date(fechaInicio); d <= fechaFin; d.setDate(d.getDate() + 1)) {
-        const year = d.getFullYear();
-        const mes = String(d.getMonth() + 1).padStart(2, '0');
-        const dia = String(d.getDate()).padStart(2, '0');
-        const fechaStr = year + '-' + mes + '-' + dia;
-        if (!fechasBloqueadas.includes(fechaStr)) {
-            fechasABloquear.push(fechaStr);
-        }
-    }
-    
-    const exito = await bloquearRangoGoogle(fechasABloquear);
-    
-    if (exito) {
-        fechasBloqueadas.push(...fechasABloquear);
-        limpiarRangoAdmin();
-        await cargarDatosGoogle();
-        mostrarAlerta('✔ Bloqueadas ' + fechasABloquear.length + ' fechas', 'success');
-    } else {
-        mostrarAlerta('❌ Error al bloquear rango', 'error');
-    }
-}
-
-async function desbloquearRangoCompleto() {
-    if (!rangoAdminInicio || !rangoAdminFin) {
-        mostrarAlerta('❌ Error: no hay rango seleccionado', 'error');
-        return;
-    }
-    
-    if (!confirm(`¿Desbloquear todas las fechas del ${rangoAdminInicio} al ${rangoAdminFin}?`)) {
-        return;
-    }
-    
-    mostrarAlerta('⏳ Desbloqueando rango...', 'success');
-    
-    // Generar todas las fechas del rango
-    const [yearIni, mesIni, diaIni] = rangoAdminInicio.split('-').map(Number);
-    const [yearFin, mesFin, diaFin] = rangoAdminFin.split('-').map(Number);
-    const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
-    const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
-    
-    const promesas = [];
-    let desbloqueadas = 0;
-    
-    for (let d = new Date(fechaInicio); d <= fechaFin; d.setDate(d.getDate() + 1)) {
-        const year = d.getFullYear();
-        const mes = String(d.getMonth() + 1).padStart(2, '0');
-        const dia = String(d.getDate()).padStart(2, '0');
-        const fechaStr = year + '-' + mes + '-' + dia;
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                accion: 'guardarPaqueteObligatorio',
+                inicio: rangoAdminInicio,
+                fin: rangoAdminFin
+            })
+        });
         
-        const idx = fechasBloqueadas.indexOf(fechaStr);
-        if (idx > -1) {
-            fechasBloqueadas.splice(idx, 1);
-            promesas.push(eliminarFechaBloqueada(fechaStr));
-            desbloqueadas++;
+        const data = await response.json();
+        
+        if (data.success) {
+            paquetesObligatorios.push({inicio: rangoAdminInicio, fin: rangoAdminFin});
+            limpiarRangoAdmin();
+            await cargarDatosGoogle();
+            mostrarAlerta('✔ Paquete creado', 'success');
+        } else {
+            mostrarAlerta('❌ Error al crear', 'error');
         }
+    } catch (error) {
+        console.error('❌ Error:', error);
+        mostrarAlerta('❌ Error al crear', 'error');
     }
-    
-    if (promesas.length > 0) {
-        await Promise.all(promesas);
-    }
-    
-    limpiarRangoAdmin();
-    await cargarDatosGoogle();
-    mostrarAlerta('✔ Desbloqueadas ' + desbloqueadas + ' fechas', 'success');
 }
 
+function mostrarListadoPaquetes() {
+    const contenedor = document.getElementById('paquetesContenido');
+    const listado = document.getElementById('listadoPaquetes');
+    
+    if (!contenedor || !listado) return;
+    
+    if (paquetesObligatorios.length === 0) {
+        listado.style.display = 'none';
+        return;
+    }
+    
+    listado.style.display = 'block';
+    contenedor.innerHTML = paquetesObligatorios.map((paq, index) => {
+        return `<div style="background: white; padding: 0.8rem; margin-bottom: 0.5rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.9rem;">📦 ${paq.inicio} → ${paq.fin}</span>
+            <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick="eliminarPaquete(${index})">🗑️</button>
+        </div>`;
+    }).join('');
+}
+
+async function eliminarPaquete(index) {
+    const paquete = paquetesObligatorios[index];
+    if (!confirm(`¿Eliminar?\n${paquete.inicio} → ${paquete.fin}`)) return;
+    
+    mostrarAlerta('⏳ Eliminando...', 'success');
+    
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                accion: 'eliminarPaqueteObligatorio',
+                inicio: paquete.inicio,
+                fin: paquete.fin
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            await cargarDatosGoogle();
+            mostrarAlerta('✔ Eliminado', 'success');
+        } else {
+            mostrarAlerta('❌ Error', 'error');
+        }
+    } catch (error) {
+        mostrarAlerta('❌ Error', 'error');
+    }
+}
+
+// ===== ADMIN - SELECCIÓN RANGO =====
+
 function seleccionarRangoAdmin(fecha) {
-    console.log('📅 Click en fecha admin:', fecha);
-    console.log('Estado actual - Inicio:', rangoAdminInicio, 'Fin:', rangoAdminFin);
+    console.log('📅 Click admin:', fecha, '| Inicio:', rangoAdminInicio, 'Fin:', rangoAdminFin);
     
     if (!rangoAdminInicio) {
-        // Primera fecha seleccionada
         rangoAdminInicio = fecha;
         rangoAdminFin = null;
-        generarCalendario();
-        mostrarAlerta('✔ Inicio seleccionado. Ahora selecciona el fin del rango', 'success');
+        const panel = document.getElementById('panelRangoAdmin');
+        if (panel) panel.style.display = 'none';
+        actualizarVisualizacionRango();
+        mostrarAlerta('✔ Inicio: ' + fecha + '. Selecciona fin', 'success');
     } else if (!rangoAdminFin) {
-        // Segunda fecha seleccionada
         if (fecha > rangoAdminInicio) {
             rangoAdminFin = fecha;
-            generarCalendario();
-            mostrarAlerta('✔ Rango seleccionado. Usa botón derecho para acciones', 'success');
+            const textoRango = document.getElementById('rangoTexto');
+            const panel = document.getElementById('panelRangoAdmin');
+            
+            if (textoRango) textoRango.textContent = rangoAdminInicio + ' → ' + rangoAdminFin;
+            if (panel) {
+                panel.style.display = 'block';
+                console.log('✅ Panel mostrado');
+            }
+            
+            actualizarVisualizacionRango();
+            mostrarAlerta('✔ Rango listo. Usa panel azul arriba ⬆️', 'success');
         } else {
-            // Si es anterior, reiniciar
             rangoAdminInicio = fecha;
             rangoAdminFin = null;
-            generarCalendario();
-            mostrarAlerta('✔ Nuevo inicio. Selecciona el fin del rango', 'success');
+            const panel = document.getElementById('panelRangoAdmin');
+            if (panel) panel.style.display = 'none';
+            actualizarVisualizacionRango();
+            mostrarAlerta('✔ Nuevo inicio: ' + fecha, 'success');
         }
     } else {
-        // Ya había un rango, reiniciar
         rangoAdminInicio = fecha;
         rangoAdminFin = null;
-        generarCalendario();
-        mostrarAlerta('✔ Rango limpiado. Nuevo inicio seleccionado', 'success');
+        const panel = document.getElementById('panelRangoAdmin');
+        if (panel) panel.style.display = 'none';
+        actualizarVisualizacionRango();
+        mostrarAlerta('✔ Reiniciado. Inicio: ' + fecha, 'success');
     }
+}
+
+function actualizarVisualizacionRango() {
+    const calendario = document.getElementById('calendario');
+    if (!calendario) return;
+    
+    const dias = calendario.querySelectorAll('.calendar-day');
+    dias.forEach(dia => {
+        const fecha = dia.dataset.fecha;
+        if (!fecha) return;
+        
+        dia.classList.remove('selected');
+        
+        if (rangoAdminInicio && rangoAdminFin) {
+            if (fecha >= rangoAdminInicio && fecha <= rangoAdminFin) {
+                dia.classList.add('selected');
+            }
+        } else if (rangoAdminInicio === fecha) {
+            dia.classList.add('selected');
+        }
+    });
 }
 
 function limpiarRangoAdmin() {
     rangoAdminInicio = null;
     rangoAdminFin = null;
-    generarCalendario();
+    const panel = document.getElementById('panelRangoAdmin');
+    if (panel) panel.style.display = 'none';
+    actualizarVisualizacionRango();
+    mostrarAlerta('✔ Limpiado', 'success');
 }
+
+// ===== FUNCIONES DE ADMIN =====
 
 async function bloquearFecha() {
     mostrarAlerta('⏳ Bloqueando...', 'success');
@@ -444,10 +408,10 @@ async function bloquearFecha() {
             fechasBloqueadas.push(fechaSeleccionadaAdmin);
             await cargarDatosGoogle();
             cerrarActionMenu();
-            mostrarAlerta('✔ Fecha bloqueada: ' + fechaSeleccionadaAdmin, 'success');
+            mostrarAlerta('✔ Bloqueada: ' + fechaSeleccionadaAdmin, 'success');
         } else {
             cerrarActionMenu();
-            mostrarAlerta('❌ Error al bloquear. Revisa la consola (F12)', 'error');
+            mostrarAlerta('❌ Error al bloquear', 'error');
         }
     } else {
         cerrarActionMenu();
@@ -467,10 +431,10 @@ async function desbloquearFecha() {
             fechasBloqueadas.splice(index, 1);
             await cargarDatosGoogle();
             cerrarActionMenu();
-            mostrarAlerta('✔ Fecha desbloqueada: ' + fechaSeleccionadaAdmin, 'success');
+            mostrarAlerta('✔ Desbloqueada: ' + fechaSeleccionadaAdmin, 'success');
         } else {
             cerrarActionMenu();
-            mostrarAlerta('❌ Error al desbloquear. Revisa la consola (F12)', 'error');
+            mostrarAlerta('❌ Error al desbloquear', 'error');
         }
     } else {
         cerrarActionMenu();
@@ -502,17 +466,14 @@ async function guardarPrecio() {
 async function confirmarReserva(index) {
     if (!confirm('¿Confirmar reserva? Se bloquearán las fechas.')) return;
     
-    mostrarAlerta('⏳ Confirmando y bloqueando...', 'success');
+    mostrarAlerta('⏳ Confirmando...', 'success');
     
     const r = reservas[index];
-    
     const fechasABloquear = [];
     const [yearIni, mesIni, diaIni] = r.fechaEntrada.split('-').map(Number);
     const [yearFin, mesFin, diaFin] = r.fechaSalida.split('-').map(Number);
     const fechaInicio = new Date(yearIni, mesIni - 1, diaIni);
     const fechaFin = new Date(yearFin, mesFin - 1, diaFin);
-    
-    console.log('📅 Bloqueando desde', r.fechaEntrada, 'hasta', r.fechaSalida);
     
     for (let d = new Date(fechaInicio); d < fechaFin; d.setDate(d.getDate() + 1)) {
         const year = d.getFullYear();
@@ -523,8 +484,6 @@ async function confirmarReserva(index) {
             fechasABloquear.push(fechaStr);
         }
     }
-    
-    console.log('📋 Fechas a bloquear:', fechasABloquear);
     
     if (fechasABloquear.length === 0) {
         mostrarAlerta('⚠️ Fechas ya bloqueadas', 'error');
@@ -537,37 +496,27 @@ async function confirmarReserva(index) {
         fechasBloqueadas.push(...fechasABloquear);
         reservas[index].confirmada = true;
         localStorage.setItem('reservas', JSON.stringify(reservas));
-        
         await cargarDatosGoogle();
-        
         mostrarReservas();
-        mostrarAlerta('✔ Confirmada! Bloqueadas ' + fechasABloquear.length + ' noches', 'success');
+        mostrarAlerta('✔ Confirmada! ' + fechasABloquear.length + ' noches', 'success');
     } else {
-        mostrarAlerta('❌ Error al confirmar. Revisa la consola (F12)', 'error');
+        mostrarAlerta('❌ Error al confirmar', 'error');
     }
 }
 
 async function eliminarReserva(index) {
-    if (!confirm('¿Eliminar esta reserva?\n\nSe moverá a "Reservas Eliminadas" y podrás recuperarla después si es necesario.')) return;
-    
-    console.log('=== INICIO ELIMINACIÓN ===');
-    console.log('Index:', index);
-    console.log('Reserva:', reservas[index]);
+    if (!confirm('¿Eliminar?\nSe moverá a "Reservas Eliminadas".')) return;
     
     mostrarAlerta('⏳ Eliminando...', 'success');
     
     const r = reservas[index];
     
     if (r.confirmada) {
-        console.log('🔓 Desbloqueando fechas de reserva confirmada...');
-        
         let entrada = r.fechaEntrada || '';
         let salida = r.fechaSalida || '';
         
         if (entrada.includes('T')) entrada = entrada.split('T')[0];
         if (salida.includes('T')) salida = salida.split('T')[0];
-        
-        console.log('Fechas a desbloquear:', entrada, '→', salida);
         
         if (entrada && salida && entrada.length === 10 && salida.length === 10) {
             const [yearIni, mesIni, diaIni] = entrada.split('-').map(Number);
@@ -576,7 +525,6 @@ async function eliminarReserva(index) {
             const fechaFin = new Date(yearFin, mesFin - 1, diaFin, 12, 0, 0);
             
             const promesas = [];
-            let desbloqueadas = 0;
             
             let currentDate = new Date(fechaInicio);
             while (currentDate <= fechaFin) {
@@ -587,49 +535,32 @@ async function eliminarReserva(index) {
                 
                 const idx = fechasBloqueadas.indexOf(fechaStr);
                 if (idx > -1) {
-                    console.log('Desbloqueando:', fechaStr);
                     fechasBloqueadas.splice(idx, 1);
                     promesas.push(eliminarFechaBloqueada(fechaStr));
-                    desbloqueadas++;
                 }
                 
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             
-            console.log('Total a desbloquear:', desbloqueadas);
-            
             if (promesas.length > 0) {
-                console.log('Esperando promesas...');
                 await Promise.all(promesas);
-                console.log('✅ Fechas desbloqueadas');
             }
         }
     }
     
-    console.log('📦 Moviendo a Reservas Eliminadas...');
-    const eliminadaExito = await moverReservaEliminada(r);
+    await moverReservaEliminada(r);
     
-    if (eliminadaExito) {
-        console.log('✅ Movida a eliminadas');
-    } else {
-        console.warn('⚠️ No se pudo mover a eliminadas, pero continuamos');
-    }
-    
-    console.log('Eliminando de array local...');
     reservas.splice(index, 1);
     localStorage.setItem('reservas', JSON.stringify(reservas));
     document.getElementById('totalReservas').textContent = reservas.length;
     
-    console.log('🔄 Recargando datos...');
     await cargarDatosGoogle();
     
     mostrarReservas();
-    mostrarAlerta('✔ Reserva eliminada y archivada', 'success');
-    
-    console.log('=== FIN ELIMINACIÓN ===');
+    mostrarAlerta('✔ Eliminada y archivada', 'success');
 }
 
-// ===== FUNCIONES DE VALIDACIÓN =====
+// ===== VALIDACIÓN DNI =====
 
 function validarDNI(dni) {
     const dniRegex = /^[0-9]{8}[A-Z]$/i;
@@ -670,17 +601,15 @@ document.getElementById('dni').addEventListener('input', function(e) {
     }
 });
 
-// ===== FUNCIONES DE CALENDARIO =====
+// ===== CALENDARIO =====
 
 function generarCalendario() {
     console.log('📅 === GENERANDO CALENDARIO ===');
     
     const año = mesActual.getFullYear();
     const mes = mesActual.getMonth();
-    
     const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    
     const mesTexto = meses[mes] + ' ' + año;
     
     const mesActualEl = document.getElementById('mesActual');
@@ -709,11 +638,7 @@ function generarCalendarioEnElemento(idElemento, año, mes, permitirAdmin) {
     const primerDiaSemana = primerDia.getDay();
     
     const calendario = document.getElementById(idElemento);
-    
-    if (!calendario) {
-        console.error('❌ No se encuentra elemento #' + idElemento);
-        return;
-    }
+    if (!calendario) return;
     
     calendario.innerHTML = '';
     
@@ -774,7 +699,6 @@ function generarCalendarioEnElemento(idElemento, año, mes, permitirAdmin) {
             diaDiv.classList.add('selected');
         }
         
-        // Marcar rango admin seleccionado
         if (modoAdmin && rangoAdminInicio && rangoAdminFin) {
             if (fechaStr >= rangoAdminInicio && fechaStr <= rangoAdminFin) {
                 diaDiv.classList.add('selected');
@@ -783,7 +707,6 @@ function generarCalendarioEnElemento(idElemento, año, mes, permitirAdmin) {
             diaDiv.classList.add('selected');
         }
         
-        // Marcar días que pertenecen a un paquete obligatorio
         const perteneceAPaquete = paquetesObligatorios.some(paq => 
             fechaStr >= paq.inicio && fechaStr <= paq.fin
         );
@@ -793,18 +716,14 @@ function generarCalendarioEnElemento(idElemento, año, mes, permitirAdmin) {
         
         if (fecha >= hoy) {
             if (modoAdmin && permitirAdmin && idElemento === 'calendario') {
-                // Click normal para seleccionar rango
                 diaDiv.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('🖱️ Click detectado en día admin:', fechaStr);
                     seleccionarRangoAdmin(fechaStr);
                 });
                 
-                // Click derecho / mantener para menú de acciones (días individuales)
                 diaDiv.addEventListener('contextmenu', function(e) {
                     e.preventDefault();
-                    console.log('🖱️ Click derecho detectado:', fechaStr);
                     mostrarActionMenu(fechaStr);
                     return false;
                 });
@@ -858,19 +777,16 @@ function seleccionarFechaCliente(fecha) {
         }
     }
     
-    // Buscar si la fecha pertenece a un paquete obligatorio
     const paquete = paquetesObligatorios.find(paq => fecha >= paq.inicio && fecha <= paq.fin);
     
     if (!fechaEntradaSeleccionada) {
-        // Primera selección
         if (paquete) {
-            // Si está en un paquete, seleccionar automáticamente todo el paquete
             entrada.value = paquete.inicio;
             salida.value = paquete.fin;
             fechaEntradaSeleccionada = paquete.inicio;
             calcularResumen();
             generarCalendario();
-            mostrarAlerta('📦 Paquete completo seleccionado: ' + paquete.inicio + ' → ' + paquete.fin, 'success');
+            mostrarAlerta('📦 Paquete seleccionado: ' + paquete.inicio + ' → ' + paquete.fin, 'success');
             return;
         }
         
@@ -878,11 +794,9 @@ function seleccionarFechaCliente(fecha) {
         entrada.value = fecha;
         salida.value = '';
         generarCalendario();
-        mostrarAlerta('✔ Entrada seleccionada. Ahora selecciona salida', 'success');
+        mostrarAlerta('✔ Entrada. Selecciona salida', 'success');
     } else {
-        // Segunda selección
         if (fecha > fechaEntradaSeleccionada) {
-            // Verificar si alguna fecha del rango está en un paquete obligatorio
             const paqueteEnRango = paquetesObligatorios.find(paq => {
                 return (fechaEntradaSeleccionada >= paq.inicio && fechaEntradaSeleccionada <= paq.fin) ||
                        (fecha >= paq.inicio && fecha <= paq.fin) ||
@@ -890,22 +804,18 @@ function seleccionarFechaCliente(fecha) {
             });
             
             if (paqueteEnRango) {
-                // Verificar si coincide exactamente con el paquete
                 if (fechaEntradaSeleccionada === paqueteEnRango.inicio && fecha === paqueteEnRango.fin) {
-                    // Perfecto, reserva el paquete completo
                     salida.value = fecha;
                     calcularResumen();
                     generarCalendario();
                     mostrarAlerta('✔ Fechas seleccionadas', 'success');
                 } else {
-                    // No coincide, mostrar error
-                    mostrarAlerta('❌ Este rango contiene un paquete obligatorio (' + paqueteEnRango.inicio + ' → ' + paqueteEnRango.fin + '). Debes reservarlo completo.', 'error');
+                    mostrarAlerta('❌ Paquete obligatorio (' + paqueteEnRango.inicio + ' → ' + paqueteEnRango.fin + '). Reserva completo.', 'error');
                     limpiarFechas();
                 }
                 return;
             }
             
-            // No hay paquetes en el rango, permitir selección normal
             salida.value = fecha;
             calcularResumen();
             generarCalendario();
@@ -968,7 +878,7 @@ function calcularResumen() {
     }
 }
 
-// ===== FUNCIONES DE MODALES Y UI =====
+// ===== UI Y MODALES =====
 
 function mostrarActionMenu(fecha) {
     fechaSeleccionadaAdmin = fecha;
@@ -977,10 +887,7 @@ function mostrarActionMenu(fecha) {
     const fechaFormateada = fechaObj.toLocaleDateString('es-ES', {day: 'numeric', month: 'long'});
     document.getElementById('actionMenuTitle').textContent = fechaFormateada;
     document.getElementById('actionMenu').classList.add('show');
-    
-    if (navigator.vibrate) {
-        navigator.vibrate(50);
-    }
+    if (navigator.vibrate) navigator.vibrate(50);
 }
 
 function cerrarActionMenu() {
@@ -1020,30 +927,14 @@ async function verificarPassword(event) {
     const password = document.getElementById('passwordAdmin').value;
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
-        
-        console.log('🔐 Activando modo admin...');
-        
-        // PRIMERO: Activar clase en body
         document.body.classList.add('modo-admin');
-        
-        // SEGUNDO: Mostrar panel admin
         document.getElementById('adminPanel').classList.add('show');
         
-        // TERCERO: Forzar visibilidad del calendario con !important en JS
         const seccionDisp = document.getElementById('seccionDisponibilidad');
-        if (seccionDisp) {
-            seccionDisp.style.setProperty('display', 'block', 'important');
-            console.log('✅ Calendario visible');
-        } else {
-            console.error('❌ No se encuentra #seccionDisponibilidad');
-        }
+        if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
-        // CUARTO: Ocultar la sección de reserva
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
-        if (seccionReserva) {
-            seccionReserva.style.setProperty('display', 'none', 'important');
-            console.log('✅ Formulario oculto');
-        }
+        if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
         
         cerrarModal('modalLoginAdmin');
         document.getElementById('passwordAdmin').value = '';
@@ -1051,18 +942,7 @@ async function verificarPassword(event) {
         await cargarDatosGoogle();
         generarCalendario();
         
-        // DEBUG: Verificar que el calendario existe y tiene días
-        const calendario = document.getElementById('calendario');
-        if (calendario) {
-            const dias = calendario.querySelectorAll('.calendar-day');
-            console.log('✅ Calendario encontrado con', dias.length, 'días');
-            console.log('🔍 ModoAdmin:', modoAdmin);
-            console.log('🔍 Primer día tiene eventos:', dias[0] ? 'sí' : 'no');
-        } else {
-            console.error('❌ No se encuentra #calendario');
-        }
-        
-        mostrarAlerta('✔ Modo admin activado. Haz CLICK en 2 fechas para crear paquete', 'success');
+        mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
     } else {
         mostrarAlerta('Contraseña incorrecta', 'error');
     }
@@ -1070,14 +950,9 @@ async function verificarPassword(event) {
 
 function cerrarAdmin() {
     modoAdmin = false;
-    
-    // Quitar clase del body
     document.body.classList.remove('modo-admin');
-    
-    // Ocultar panel admin
     document.getElementById('adminPanel').classList.remove('show');
     
-    // Restaurar calendario según pantalla
     const seccionDisp = document.getElementById('seccionDisponibilidad');
     if (seccionDisp) {
         if (window.innerWidth >= 768) {
@@ -1087,11 +962,8 @@ function cerrarAdmin() {
         }
     }
     
-    // Mostrar de nuevo la sección de reserva
     const seccionReserva = document.querySelector('.section:has(#reservaForm)');
-    if (seccionReserva) {
-        seccionReserva.style.removeProperty('display');
-    }
+    if (seccionReserva) seccionReserva.style.removeProperty('display');
     
     generarCalendario();
     mostrarAlerta('✔ Modo cliente', 'success');
@@ -1125,9 +997,9 @@ function mostrarReservas() {
                 '</div>' +
                 '<div style="display: grid; grid-template-columns: ' + (!r.confirmada ? '1fr 1fr' : '1fr') + '; gap: 0.5rem; margin-top: 0.8rem;">' +
                 (!r.confirmada ? 
-                    '<button class="btn btn-success" style="padding: 0.7rem; font-size: 0.85rem;" onclick="confirmarReserva(' + index + ')">✔ Confirmar y Bloquear</button>' : 
+                    '<button class="btn btn-success" style="padding: 0.7rem; font-size: 0.85rem;" onclick="confirmarReserva(' + index + ')">✔ Confirmar</button>' : 
                     '') +
-                '<button class="btn btn-danger" style="padding: 0.7rem; font-size: 0.85rem;" onclick="eliminarReserva(' + index + ')">🗑️ Eliminar</button>' +
+                '<button class="btn btn-danger" style="padding: 0.7rem; font-size: 0.85rem;" onclick="eliminarReserva(' + index + ')">🗑️</button>' +
                 '</div>' +
                 '</div>';
         }).join('');
@@ -1186,124 +1058,3 @@ function mostrarAlerta(mensaje, tipo) {
     container.innerHTML = '<div class="alert ' + tipo + ' show">' + mensaje + '</div>';
     setTimeout(function() {
         container.innerHTML = '';
-    }, 4000);
-}
-
-// ===== ENVIAR RESERVA =====
-
-document.getElementById('reservaForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const dniInput = document.getElementById('dni');
-    if (!validarDNI(dniInput.value)) {
-        mostrarAlerta('DNI no válido', 'error');
-        dniInput.focus();
-        return;
-    }
-    
-    const btnEnviar = document.getElementById('btnEnviar');
-    const loader = document.getElementById('loader');
-    
-    btnEnviar.disabled = true;
-    loader.style.display = 'block';
-    
-    try {
-        const reserva = {
-            fechaReserva: new Date().toLocaleString('es-ES'),
-            nombre: document.getElementById('nombre').value,
-            dni: dniInput.value.toUpperCase(),
-            email: document.getElementById('email').value,
-            telefono: document.getElementById('telefono').value,
-            personas: document.getElementById('personas').value,
-            fechaEntrada: document.getElementById('fechaEntrada').value,
-            fechaSalida: document.getElementById('fechaSalida').value,
-            noches: document.getElementById('resumenNoches').textContent,
-            total: document.getElementById('resumenTotal').textContent,
-            señal: document.getElementById('resumenSeñal').textContent,
-            comentarios: document.getElementById('comentarios').value,
-            nombreCampo: CONFIG.nombreCampo,
-            confirmada: false
-        };
-        
-        const exitoGoogle = await guardarReservaGoogle(reserva);
-        
-        if (!exitoGoogle) {
-            throw new Error('Error al guardar en Google Sheets');
-        }
-        
-        await emailjs.send(
-            EMAILJS_CONFIG.serviceId,
-            EMAILJS_CONFIG.templateCliente,
-            {
-                to_email: reserva.email,
-                to_name: reserva.nombre,
-                nombre: reserva.nombre,
-                dni: reserva.dni,
-                email: reserva.email,
-                telefono: reserva.telefono,
-                personas: reserva.personas,
-                fechaEntrada: reserva.fechaEntrada,
-                fechaSalida: reserva.fechaSalida,
-                noches: reserva.noches,
-                total: reserva.total,
-                señal: reserva.señal,
-                comentarios: reserva.comentarios
-            }
-        );
-        
-        await emailjs.send(
-            EMAILJS_CONFIG.serviceId,
-            EMAILJS_CONFIG.templateAdmin,
-            {
-                to_email: CONFIG.tuEmail,
-                nombre: reserva.nombre,
-                dni: reserva.dni,
-                email: reserva.email,
-                telefono: reserva.telefono,
-                personas: reserva.personas,
-                fechaEntrada: reserva.fechaEntrada,
-                fechaSalida: reserva.fechaSalida,
-                noches: reserva.noches,
-                total: reserva.total,
-                señal: reserva.señal,
-                comentarios: reserva.comentarios
-            }
-        );
-        
-        reservas.push(reserva);
-        localStorage.setItem('reservas', JSON.stringify(reservas));
-        document.getElementById('totalReservas').textContent = reservas.length;
-        
-        document.getElementById('reservaForm').reset();
-        document.getElementById('resumenReserva').style.display = 'none';
-        fechaEntradaSeleccionada = null;
-        generarCalendario();
-        
-        document.getElementById('emailConfirmacion').textContent = CONFIG.tuEmail;
-        document.getElementById('modalConfirmacion').classList.add('show');
-        
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarAlerta('❌ Error al enviar. Inténtalo de nuevo.', 'error');
-    } finally {
-        btnEnviar.disabled = false;
-        loader.style.display = 'none';
-    }
-});
-
-// ===== CARGAR AL INICIO =====
-window.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Página cargada, iniciando...');
-    console.log('🔗 URL de Google Script:', GOOGLE_SCRIPT_URL);
-    console.log('⚠️ Si ves errores de CORS, debes:');
-    console.log('   1. Ir a Apps Script');
-    console.log('   2. Implementar → Administrar implementaciones');
-    console.log('   3. Clic en ✏️ lápiz');
-    console.log('   4. Cambiar "Versión" a "Nueva versión"');
-    console.log('   5. Implementar');
-    console.log('   6. Esperar 20 segundos');
-    console.log('   7. Refrescar esta página');
-    cargarDatosGoogle();
-});
-
-console.log('✅ Sistema inicializado');
