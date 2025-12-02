@@ -1058,3 +1058,116 @@ function mostrarAlerta(mensaje, tipo) {
     container.innerHTML = '<div class="alert ' + tipo + ' show">' + mensaje + '</div>';
     setTimeout(function() {
         container.innerHTML = '';
+    }, 4000);
+}
+
+// ===== ENVIAR RESERVA =====
+document.getElementById('reservaForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const dniInput = document.getElementById('dni');
+    if (!validarDNI(dniInput.value)) {
+        mostrarAlerta('DNI no válido', 'error');
+        dniInput.focus();
+        return;
+    }
+    
+    const btnEnviar = document.getElementById('btnEnviar');
+    const loader = document.getElementById('loader');
+    
+    btnEnviar.disabled = true;
+    loader.style.display = 'block';
+    
+    try {
+        const reserva = {
+            fechaReserva: new Date().toLocaleString('es-ES'),
+            nombre: document.getElementById('nombre').value,
+            dni: dniInput.value.toUpperCase(),
+            email: document.getElementById('email').value,
+            telefono: document.getElementById('telefono').value,
+            personas: document.getElementById('personas').value,
+            fechaEntrada: document.getElementById('fechaEntrada').value,
+            fechaSalida: document.getElementById('fechaSalida').value,
+            noches: document.getElementById('resumenNoches').textContent,
+            total: document.getElementById('resumenTotal').textContent,
+            señal: document.getElementById('resumenSeñal').textContent,
+            comentarios: document.getElementById('comentarios').value,
+            nombreCampo: CONFIG.nombreCampo,
+            confirmada: false
+        };
+        
+        const exitoGoogle = await guardarReservaGoogle(reserva);
+        
+        if (!exitoGoogle) {
+            throw new Error('Error al guardar en Google Sheets');
+        }
+        
+        await emailjs.send(
+            EMAILJS_CONFIG.serviceId,
+            EMAILJS_CONFIG.templateCliente,
+            {
+                to_email: reserva.email,
+                to_name: reserva.nombre,
+                nombre: reserva.nombre,
+                dni: reserva.dni,
+                email: reserva.email,
+                telefono: reserva.telefono,
+                personas: reserva.personas,
+                fechaEntrada: reserva.fechaEntrada,
+                fechaSalida: reserva.fechaSalida,
+                noches: reserva.noches,
+                total: reserva.total,
+                señal: reserva.señal,
+                comentarios: reserva.comentarios
+            }
+        );
+        
+        await emailjs.send(
+            EMAILJS_CONFIG.serviceId,
+            EMAILJS_CONFIG.templateAdmin,
+            {
+                to_email: CONFIG.tuEmail,
+                nombre: reserva.nombre,
+                dni: reserva.dni,
+                email: reserva.email,
+                telefono: reserva.telefono,
+                personas: reserva.personas,
+                fechaEntrada: reserva.fechaEntrada,
+                fechaSalida: reserva.fechaSalida,
+                noches: reserva.noches,
+                total: reserva.total,
+                señal: reserva.señal,
+                comentarios: reserva.comentarios
+            }
+        );
+        
+        reservas.push(reserva);
+        localStorage.setItem('reservas', JSON.stringify(reservas));
+        document.getElementById('totalReservas').textContent = reservas.length;
+        
+        document.getElementById('reservaForm').reset();
+        document.getElementById('resumenReserva').style.display = 'none';
+        fechaEntradaSeleccionada = null;
+        generarCalendario();
+        
+        document.getElementById('emailConfirmacion').textContent = CONFIG.tuEmail;
+        document.getElementById('modalConfirmacion').classList.add('show');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarAlerta('❌ Error al enviar. Inténtalo de nuevo.', 'error');
+    } finally {
+        btnEnviar.disabled = false;
+        loader.style.display = 'none';
+    }
+});
+
+// ===== CARGAR AL INICIO =====
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Página cargada');
+    console.log('🔗 Google Script:', GOOGLE_SCRIPT_URL);
+    cargarDatosGoogle();
+});
+
+console.log('✅ Sistema inicializado');
+    
