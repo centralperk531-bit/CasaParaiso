@@ -5,15 +5,16 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_llWLzIYpMB
 const CONFIG = {
     nombreCampo: "Casa Paraíso",
     descripcion: "Tu escapada perfecta",
+    descripción 2: "Licencia <strong>VTAR/CA/03260<strong>"
     capacidad: "15 personas",
     precioPorNoche: 200,
     estanciaMinima: 2,
-    señalPorcentaje: 20,
+    señalPorcentaje: 25,
     tuEmail: "centralperk.531@gmail.com",
     datosPago: {
-        titular: "Tu Nombre",
+        titular: "Jesús Teijeiro López",
         iban: "ES00 0000 0000 0000 0000 0000",
-        bizum: "600 123 456"
+        bizum: "+34 669 65 66 24"
     }
 };
 
