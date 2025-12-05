@@ -5,6 +5,15 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_llWLzIYpMB
 const CONFIG = {
     nombreCampo: "Casa Paraíso",
     descripcion: "Tu escapada perfecta - VTAR/CA/03260",
+    descripcionLarga: "Disfruta de una estancia única...",  // ← Cambia esto
+    enlace1: {
+        nombre: "📸 Ver Galería Completa",  // ← Cambia el texto
+        url: "https://photos.google.com/tu-galeria"  // ← Pon tu URL real
+    },
+    enlace2: {
+        nombre: "📍 Cómo Llegar",  // ← Cambia el texto
+        url: "https://maps.google.com/?q=tu-ubicacion"  // ← Pon tu URL real
+    },
     capacidad: "15 personas",
     habitaciones: 4,
     precioPorNoche: 200,
