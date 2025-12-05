@@ -48,6 +48,18 @@ header p {
     opacity: 0.9;
 }
 
+#headerDescripcionLarga {
+    max-width: 800px;
+    margin: 1rem auto;
+    text-align: center;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Limita a 4 líneas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .admin-btn {
     position: absolute;
     top: 1rem;
