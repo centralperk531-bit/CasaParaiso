@@ -1471,6 +1471,7 @@ async function abrirMesCompleto() {
         mostrarAlerta('❌ Error al abrir mes', 'error');
     }
     window.bloquearSeleccionAdmin = bloquearSeleccionAdmin;
+    window.desbloquearSeleccionAdmin = desbloquearSeleccionAdmin;
 }
 
 console.log('✅ Sistema inicializado');
