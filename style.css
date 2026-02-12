@@ -627,3 +627,50 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    /* =========================
+   Paquetes: breakpoint 900px
+   - <900: oculto (se abrirá desde menú acción)
+   - >=900: sidebar persistente
+   ========================= */
+
+@media (min-width: 900px) {
+  /* 2 columnas: calendario + sidebar */
+  #seccionDisponibilidad {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  /* Sidebar */
+  #listadoPaquetes {
+    display: block !important;
+    grid-column: 2;
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+  }
+
+  /* El panel de rango lo dejamos en la columna del calendario */
+  #panelRangoAdmin {
+    grid-column: 1;
+  }
+
+  /* Todo lo demás del calendario, a la columna 1 */
+  #seccionDisponibilidad > p,
+  #seccionDisponibilidad .month-selector,
+  #seccionDisponibilidad .calendar-wrapper,
+  #seccionDisponibilidad .calendar {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 899px) {
+  /* Móvil: el listado no debe aparecer arriba del calendario */
+  #listadoPaquetes {
+    display: none !important;
+  }
+}
+
