@@ -449,6 +449,111 @@ function limpiarRangoAdmin() {
     actualizarVisualizacionRango();
     mostrarAlerta('✔ Limpiado', 'success');
 }
+
+async function bloquearSeleccionAdmin() {
+  if (!rangoAdminInicio || !rangoAdminFin) {
+    mostrarAlerta("Selecciona 2 fechas primero", "error");
+    return;
+  }
+
+  if (!confirm(`Bloquear TODO el rango ${rangoAdminInicio} → ${rangoAdminFin}?`)) return;
+
+  const [y1, m1, d1] = rangoAdminInicio.split("-").map(Number);
+  const [y2, m2, d2] = rangoAdminFin.split("-").map(Number);
+
+  const inicio = new Date(y1, m1 - 1, d1, 12, 0, 0);
+  const fin = new Date(y2, m2 - 1, d2, 12, 0, 0);
+
+  const fechasABloquear = [];
+  for (let d = new Date(inicio); d <= fin; d.setDate(d.getDate() + 1)) {
+    const year = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const dia = String(d.getDate()).padStart(2, "0");
+    const fechaStr = `${year}-${mes}-${dia}`;
+
+    if (!fechasBloqueadas.includes(fechaStr)) fechasABloquear.push(fechaStr);
+  }
+
+  if (fechasABloquear.length === 0) {
+    mostrarAlerta("Rango ya bloqueado", "success");
+    limpiarRangoAdmin();
+    return;
+  }
+
+  mostrarAlerta("Bloqueando rango...", "success");
+
+  const exito = await bloquearRangoGoogle(fechasABloquear);
+  if (exito) {
+    fechasBloqueadas.push(...fechasABloquear);
+    await cargarDatosGoogle();
+    limpiarRangoAdmin();
+    mostrarAlerta(`Bloqueado (${fechasABloquear.length} días)`, "success");
+  } else {
+    mostrarAlerta("Error al bloquear rango", "error");
+  }
+}
+
+async function desbloquearSeleccionAdmin() {
+  if (!rangoAdminInicio || !rangoAdminFin) {
+    mostrarAlerta("Selecciona 2 fechas primero", "error");
+    return;
+  }
+
+  if (!confirm(`Desbloquear TODO el rango ${rangoAdminInicio} → ${rangoAdminFin}? (se mantendrán reservas confirmadas)`)) return;
+
+  const [y1, m1, d1] = rangoAdminInicio.split("-").map(Number);
+  const [y2, m2, d2] = rangoAdminFin.split("-").map(Number);
+
+  const inicio = new Date(y1, m1 - 1, d1, 12, 0, 0);
+  const fin = new Date(y2, m2 - 1, d2, 12, 0, 0);
+
+  const fechasADesbloquear = [];
+
+  for (let d = new Date(inicio); d <= fin; d.setDate(d.getDate() + 1)) {
+    const year = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const dia = String(d.getDate()).padStart(2, "0");
+    const fechaStr = `${year}-${mes}-${dia}`;
+
+    // Solo desbloquear si está bloqueada y NO pertenece a una reserva confirmada
+    const esReservaConfirmada = reservas.some((r) => {
+      if (!r.confirmada) return false;
+      const entrada = (r.fechaEntrada || "").split("T")[0];
+      const salida = (r.fechaSalida || "").split("T")[0];
+      return fechaStr >= entrada && fechaStr <= salida;
+    });
+
+    if (fechasBloqueadas.includes(fechaStr) && !esReservaConfirmada) {
+      fechasADesbloquear.push(fechaStr);
+    }
+  }
+
+  if (fechasADesbloquear.length === 0) {
+    mostrarAlerta("No hay días para desbloquear (o son de reservas confirmadas)", "success");
+    limpiarRangoAdmin();
+    return;
+  }
+
+  mostrarAlerta("Desbloqueando rango...", "success");
+
+  const resultados = await Promise.all(fechasADesbloquear.map((f) => eliminarFechaBloqueada(f)));
+  const ok = resultados.filter(Boolean);
+
+  if (ok.length > 0) {
+    ok.forEach((f) => {
+      const idx = fechasBloqueadas.indexOf(f);
+      if (idx !== -1) fechasBloqueadas.splice(idx, 1);
+    });
+
+    await cargarDatosGoogle();
+    limpiarRangoAdmin();
+    mostrarAlerta(`Desbloqueado (${ok.length} días)`, "success");
+  } else {
+    mostrarAlerta("Error al desbloquear rango", "error");
+  }
+}
+
+
 // ===== FUNCIONES DE ADMIN =====
 
 async function bloquearFecha() {
