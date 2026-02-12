@@ -43,6 +43,18 @@ let rangoAdminInicio = null;
 let rangoAdminFin = null;
 let paquetesObligatorios = [];
 
+// ===== CONVERTIR FECHAS =====
+function fechaES(yyyyMmDd) {
+  if (!yyyyMmDd) return "";
+  const [y, m, d] = yyyyMmDd.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 // ===== INICIALIZACIÓN =====
 emailjs.init(EMAILJS_CONFIG.publicKey);
 
@@ -1140,17 +1152,24 @@ document.getElementById('reservaForm').addEventListener('submit', async function
             fechaSalida: document.getElementById('fechaSalida').value,
             noches: document.getElementById('resumenNoches').textContent,
             total: document.getElementById('resumenTotal').textContent,
-            señal: document.getElementById('resumenSeñal').textContent,
+            senal: document.getElementById('resumenSeñal').textContent,
             comentarios: document.getElementById('comentarios').value,
             nombreCampo: CONFIG.nombreCampo,
             confirmada: false
         };
+        
+        // Recalcular señal en el submit (más robusto)
+        const totalNum = parseFloat(String(reserva.total).replace(",", "."));
+        reserva.señal = ((totalNum * CONFIG.señalPorcentaje) / 100).toFixed(2);
         
         const exitoGoogle = await guardarReservaGoogle(reserva);
         
         if (!exitoGoogle) {
             throw new Error('Error al guardar en Google Sheets');
         }
+        
+        const fechaEntradaES = fechaES(reserva.fechaEntrada);
+        const fechaSalidaES  = fechaES(reserva.fechaSalida);
         
         await emailjs.send(
             EMAILJS_CONFIG.serviceId,
@@ -1163,11 +1182,11 @@ document.getElementById('reservaForm').addEventListener('submit', async function
                 email: reserva.email,
                 telefono: reserva.telefono,
                 personas: reserva.personas,
-                fechaEntrada: reserva.fechaEntrada,
-                fechaSalida: reserva.fechaSalida,
+                fechaEntrada: fechaEntradaES,
+                fechaSalida: fechaSalidaES,
                 noches: reserva.noches,
                 total: reserva.total,
-                señal: reserva.señal,
+                senal: reserva.señal,
                 comentarios: reserva.comentarios
             }
         );
@@ -1182,11 +1201,11 @@ document.getElementById('reservaForm').addEventListener('submit', async function
                 email: reserva.email,
                 telefono: reserva.telefono,
                 personas: reserva.personas,
-                fechaEntrada: reserva.fechaEntrada,
-                fechaSalida: reserva.fechaSalida,
+                fechaEntrada: fechaEntradaES,
+                fechaSalida: fechaSalidaES,
                 noches: reserva.noches,
                 total: reserva.total,
-                señal: reserva.señal,
+                senal: reserva.señal,
                 comentarios: reserva.comentarios
             }
         );
