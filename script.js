@@ -1470,6 +1470,7 @@ async function abrirMesCompleto() {
     } else {
         mostrarAlerta('❌ Error al abrir mes', 'error');
     }
+    window.bloquearSeleccionAdmin = bloquearSeleccionAdmin;
 }
 
 console.log('✅ Sistema inicializado');
