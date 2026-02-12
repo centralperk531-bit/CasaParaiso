@@ -672,5 +672,9 @@ footer {
   #listadoPaquetes {
     display: none !important;
   }
+/* Admin: ocultar listado de paquetes por defecto */
+    body.modo-admin #listadoPaquetes {
+      display: none;
+    }
 }
 
