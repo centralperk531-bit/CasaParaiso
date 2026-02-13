@@ -334,11 +334,11 @@ function mostrarListadoPaquetes() {
     if (!contenedor || !listado) return;
     
     if (paquetesObligatorios.length === 0) {
-        listado.style.display = 'none';
+        listado.classList.add('is-hidden');
         return;
     }
     
-    listado.style.display = 'block';
+    listado.classList.remove('is-hidden');
     contenedor.innerHTML = paquetesObligatorios.map((paq, index) => {
         return `<div style="background: white; padding: 0.8rem; margin-bottom: 0.5rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.9rem;">📦 ${paq.inicio} → ${paq.fin}</span>
