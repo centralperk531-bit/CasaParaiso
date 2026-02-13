@@ -1082,47 +1082,29 @@ async function verificarPassword(event) {
     if (event) event.preventDefault();
     
     const password = document.getElementById('passwordAdmin').value;
-    
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
-        const adminPanel = document.getElementById('adminPanel');
-        if (adminPanel) {
-            adminPanel.classList.add('show');
-            setTimeout(() => {
-                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
-
-        // --- GESTIÓN LISTADO PAQUETES (Opción B) ---
-        // Solo declaramos la variable UNA vez
-        const listadoPaquetes = document.getElementById('listadoPaquetes');
-        if (listadoPaquetes) {
-            listadoPaquetes.classList.add('is-hidden'); // Añadimos la clase para ocultarlo
-            listadoPaquetes.style.display = ''; // Limpiamos estilos inline si los hubiera
-        }
+        document.getElementById('adminPanel').classList.add('show');
         
-        // --- RESETEAR VISTA CALENDARIO ---
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
         
-        // Mostrar precio base en admin si existe
+        // Mostrar precio base en admin
         const itemPrecio = document.getElementById('itemPrecio');
         if (itemPrecio) itemPrecio.style.display = 'block';
         
         cerrarModal('modalLoginAdmin');
-        const inputPass = document.getElementById('passwordAdmin');
-        if (inputPass) inputPass.value = '';
+        document.getElementById('passwordAdmin').value = '';
         
         await cargarDatosGoogle();
-        
         generarCalendario();
-        mostrarAlerta('✔ Modo admin activado', 'success');
+        
+        mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
         generarSelectorMeses();
-
     } else {
         mostrarAlerta('Contraseña incorrecta', 'error');
     }
