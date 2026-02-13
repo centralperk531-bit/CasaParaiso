@@ -1086,6 +1086,10 @@ async function verificarPassword(event) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
         document.getElementById('adminPanel').classList.add('show');
+                // Hacer scroll al panel admin
+        setTimeout(() => {
+        document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
                 // Ocultar secciones innecesarias en modo admin
         document.querySelectorAll('section')[2].style.display = 'none'; // Galería
         document.querySelectorAll('section')[3].style.display = 'none'; // Info
