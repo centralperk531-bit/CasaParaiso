@@ -1086,7 +1086,27 @@ async function verificarPassword(event) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
         document.getElementById('adminPanel').classList.add('show');
-        
+                // Ocultar secciones innecesarias en modo admin
+        document.querySelectorAll('section')[2].style.display = 'none'; // Galería
+        document.querySelectorAll('section')[3].style.display = 'none'; // Info
+        document.querySelectorAll('section')[5].style.display = 'none'; // Reserva
+        document.querySelectorAll('section')[6].style.display = 'none'; // Datos Pago
+
+                // Ocultar textos del header
+        const descLarga = document.getElementById('headerDescripcionLarga');
+        const descCorta = document.getElementById('headerDescripcion');
+        const enlaceGaleria = document.querySelector('header p:has(a[href="galeria.html"])');
+        const enlace2 = document.querySelector('header p:has(#enlace2)');
+
+        if (descLarga) descLarga.style.display = 'none';
+        if (descCorta) descCorta.style.display = 'none';
+        if (enlaceGaleria) enlaceGaleria.style.display = 'none';
+        if (enlace2) enlace2.style.display = 'none';
+
+                // Ocultar listado de paquetes por defecto
+        const listadoPaquetes = document.getElementById('listadoPaquetes');
+        if (listadoPaquetes) listadoPaquetes.style.display = 'none';
+       
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
