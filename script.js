@@ -1478,6 +1478,11 @@ console.log('✅ Sistema inicializado');
 function togglePaquetes() {
   const el = document.getElementById("listadoPaquetes");
   if (!el) return;
-  el.classList.toggle("is-hidden");
+  
+  if (el.style.display === "none") {
+    el.style.display = "block";
+  } else {
+    el.style.display = "none";
+  }
 }
 window.togglePaquetes = togglePaquetes;
