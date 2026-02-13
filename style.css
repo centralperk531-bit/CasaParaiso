@@ -627,3 +627,8 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
+    /* Clase para ocultar elementos temporalmente */
+.is-hidden {
+    display: none !important;
+}
+
