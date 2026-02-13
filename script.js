@@ -1090,6 +1090,11 @@ async function verificarPassword(event) {
         setTimeout(() => {
         document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
+                // Ocultar listado de paquetes por defecto
+        const listadoPaquetes = document.getElementById('listadoPaquetes');
+        if (listadoPaquetes) {
+            listadoPaquetes.style.display = 'none';
+        }
                 // Ocultar secciones innecesarias en modo admin
         document.querySelectorAll('section')[2].style.display = 'none'; // Galería
         document.querySelectorAll('section')[3].style.display = 'none'; // Info
