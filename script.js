@@ -1504,7 +1504,4 @@ function togglePaquetes() {
         listado.style.display = 'none';
     }
 }
-
-}
-
 console.log('✅ Sistema inicializado');
