@@ -1087,53 +1087,50 @@ async function verificarPassword(event) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
         
-        // 1. OCULTAR TODAS LAS SECCIONES QUE MOLESTAN
-        // Ocultamos Ubicación, Galería, Info, Datos de Pago...
-        // (Suponiendo que son secciones estándar <section>)
+        // 1. OCULTAR SECCIONES ESPECÍFICAS (Por orden, como tenías tú)
         const secciones = document.querySelectorAll('section');
-        secciones.forEach(sec => {
-            // Si la sección NO contiene el panel de admin ni el calendario...
-            if (!sec.querySelector('#adminPanel') && !sec.querySelector('#calendario')) {
-                sec.style.display = 'none';
-            }
-        });
+        // Ocultamos: Galería[2], Info[3], Reserva[5], Pagos[6]
+        // (Añadimos comprobación 'if' para que no falle si falta alguna)
+        if (secciones[2]) secciones[2].style.display = 'none';
+        if (secciones[3]) secciones[3].style.display = 'none';
+        if (secciones[5]) secciones[5].style.display = 'none'; 
+        if (secciones[6]) secciones[6].style.display = 'none';
 
-        // 2. OCULTAR TEXTOS DEL HEADER
+        // 2. OCULTAR TODO EL TEXTO DEL HEADER (Enlaces, bienvenida, ubicación...)
+        // Esto borra todos los párrafos <p> dentro del <header>
+        const textosHeader = document.querySelectorAll('header p');
+        textosHeader.forEach(p => p.style.display = 'none');
+        
+        // Ocultar también descripciones específicas por si acaso
         if (document.getElementById('headerDescripcionLarga')) 
             document.getElementById('headerDescripcionLarga').style.display = 'none';
-        if (document.getElementById('headerDescripcion')) 
-            document.getElementById('headerDescripcion').style.display = 'none';
-            
-        // Ocultar enlaces específicos del header
-        const enlacesHeader = document.querySelectorAll('header p');
-        enlacesHeader.forEach(p => p.style.display = 'none');
 
-        // 3. MOSTRAR PANEL ADMIN Y CALENDARIO
+        // 3. GESTIÓN PANEL ADMIN Y PAQUETES
         const adminPanel = document.getElementById('adminPanel');
         if (adminPanel) {
-            adminPanel.style.display = 'block'; // Forzar visible
+            adminPanel.style.display = 'block';
             adminPanel.classList.add('show');
             setTimeout(() => {
                 adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
 
-        const seccionDisp = document.getElementById('seccionDisponibilidad');
-        if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
-        
-        // 4. OCULTAR LISTADO DE PAQUETES INICIALMENTE
+        // Ocultar Listado de Paquetes (Opción B)
         if (document.getElementById('listadoPaquetes')) {
             document.getElementById('listadoPaquetes').style.display = 'none';
         }
+        
+        // Asegurar calendario visible
+        const seccionDisp = document.getElementById('seccionDisponibilidad');
+        if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
 
-        // 5. CARGAR DATOS
+        // 4. CARGAR Y FINALIZAR
         cerrarModal('modalLoginAdmin');
         document.getElementById('passwordAdmin').value = '';
         
         await cargarDatosGoogle();
-        
         generarCalendario();
-        mostrarAlerta('✔ Modo admin activado', 'success');
+        mostrarAlerta('✔ Modo Admin Activo', 'success');
         generarSelectorMeses();
 
     } else {
