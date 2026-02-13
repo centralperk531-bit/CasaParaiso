@@ -1078,6 +1078,56 @@ function togglePassword() {
     }
 }
 
+async function verificarPassword(event) {
+    if (event) event.preventDefault();
+    
+    const password = document.getElementById('passwordAdmin').value;
+    
+    if (password === ADMIN_PASSWORD) {
+        modoAdmin = true;
+        document.body.classList.add('modo-admin');
+        
+        const adminPanel = document.getElementById('adminPanel');
+        if (adminPanel) {
+            adminPanel.classList.add('show');
+            setTimeout(() => {
+                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        // --- GESTIÓN DEL LISTADO (Variable renombrada para evitar errores) ---
+        const listaPaq = document.getElementById('listadoPaquetes');
+        if (listaPaq) {
+            listaPaq.classList.add('is-hidden'); 
+            listaPaq.style.display = ''; 
+        }
+
+        // --- RESETEO DE VISTAS ---
+        const seccionDisp = document.getElementById('seccionDisponibilidad');
+        if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
+        
+        const seccionReserva = document.querySelector('.section:has(#reservaForm)');
+        if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
+        
+        // Mostrar precio base
+        const itemPrecio = document.getElementById('itemPrecio');
+        if (itemPrecio) itemPrecio.style.display = 'block';
+        
+        cerrarModal('modalLoginAdmin');
+        const inputPass = document.getElementById('passwordAdmin');
+        if (inputPass) inputPass.value = '';
+        
+        await cargarDatosGoogle();
+        
+        generarCalendario();
+        mostrarAlerta('✔ Modo admin activado', 'success');
+        generarSelectorMeses();
+
+    } else {
+        mostrarAlerta('Contraseña incorrecta', 'error');
+    }
+}
+
 function cerrarAdmin() {
     modoAdmin = false;
     document.body.classList.remove('modo-admin');
