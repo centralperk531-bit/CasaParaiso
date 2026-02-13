@@ -1503,6 +1503,7 @@ function togglePaquetes() {
         listado.classList.remove('is-hidden'); // Por si acaso
     } else {
         listado.style.display = 'none';
+        }
     }
 }
 
