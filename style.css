@@ -627,3 +627,12 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    /* Ocultar secciones innecesarias en modo admin */
+body.modo-admin .galeria,
+body.modo-admin section:has(#reservaForm),
+body.modo-admin section:has(.info-grid),
+body.modo-admin section:has(#pagoTitular) {
+  display: none !important;
+}
+
