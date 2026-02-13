@@ -1088,58 +1088,35 @@ async function verificarPassword(event) {
         document.body.classList.add('modo-admin');
         document.getElementById('adminPanel').classList.add('show');
         
-        // Hacer scroll al panel admin
+        // Scroll suave al panel
         setTimeout(() => {
             document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
 
-        // --- LIMPIEZA DE PANTALLA ---
-
-        // 1. Ocultar listado de paquetes (FORMA CORRECTA PARA QUE EL BOTÓN FUNCIONE LUEGO)
+        // --- GESTIÓN DEL LISTADO DE PAQUETES ---
         const listadoPaquetes = document.getElementById('listadoPaquetes');
         if (listadoPaquetes) {
-            listadoPaquetes.classList.add('is-hidden'); // Añadimos la clase
-            listadoPaquetes.style.display = ''; // Quitamos estilos fijos si los hubiera
+            // Usamos la clase para ocultarlo inicialmente, así el botón podrá mostrarlo después
+            listadoPaquetes.classList.add('is-hidden');
+            // Aseguramos que no tenga display:none en línea que bloquee la clase
+            listadoPaquetes.style.display = ''; 
         }
 
-        // 2. Ocultar secciones innecesarias
-        const secciones = document.querySelectorAll('section');
-        if (secciones[2]) secciones[2].style.display = 'none'; // Galería
-        if (secciones[3]) secciones[3].style.display = 'none'; // Info
-        if (secciones[5]) secciones[5].style.display = 'none'; // Reserva
-        if (secciones[6]) secciones[6].style.display = 'none'; // Datos Pago
-
-        // 3. Ocultar textos del header
-        const descLarga = document.getElementById('headerDescripcionLarga');
-        const descCorta = document.getElementById('headerDescripcion');
-        const enlaceGaleria = document.querySelector('header p:has(a[href="galeria.html"])');
-        const enlace2 = document.querySelector('header p:has(#enlace2)');
-
-        if (descLarga) descLarga.style.display = 'none';
-        if (descCorta) descCorta.style.display = 'none';
-        if (enlaceGaleria) enlaceGaleria.style.display = 'none';
-        if (enlace2) enlace2.style.display = 'none';
-       
-        // 4. Asegurar que se ve el calendario y no el formulario
+        // --- RESETEO DE VISTAS (Calendario visible, Reserva oculta) ---
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
         
-        // 5. Mostrar precio base en admin
-        const itemPrecio = document.getElementById('itemPrecio');
-        if (itemPrecio) itemPrecio.style.display = 'block';
-        
-        // --- FIN LIMPIEZA ---
-
+        // --- FINALIZACIÓN ---
         cerrarModal('modalLoginAdmin');
         document.getElementById('passwordAdmin').value = '';
         
         await cargarDatosGoogle();
-        
         generarCalendario();
-        mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
+        
+        mostrarAlerta('✔ Modo admin activado', 'success');
         generarSelectorMeses();
 
     } else {
