@@ -636,3 +636,7 @@ body.modo-admin section:nth-of-type(7)   /* Datos Pago */
 {
   display: none !important;
 }
+/* Asegura que el listado se oculte cuando tenga la clase is-hidden */
+#listadoPaquetes.is-hidden {
+    display: none !important;
+}
