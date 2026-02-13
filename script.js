@@ -1082,57 +1082,29 @@ async function verificarPassword(event) {
     if (event) event.preventDefault();
     
     const password = document.getElementById('passwordAdmin').value;
-    
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
+        document.getElementById('adminPanel').classList.add('show');
         
-        // 1. OCULTAR SECCIONES ESPECÍFICAS (Por orden, como tenías tú)
-        const secciones = document.querySelectorAll('section');
-        // Ocultamos: Galería[2], Info[3], Reserva[5], Pagos[6]
-        // (Añadimos comprobación 'if' para que no falle si falta alguna)
-        if (secciones[2]) secciones[2].style.display = 'none';
-        if (secciones[3]) secciones[3].style.display = 'none';
-        if (secciones[5]) secciones[5].style.display = 'none'; 
-        if (secciones[6]) secciones[6].style.display = 'none';
-
-        // 2. OCULTAR TODO EL TEXTO DEL HEADER (Enlaces, bienvenida, ubicación...)
-        // Esto borra todos los párrafos <p> dentro del <header>
-        const textosHeader = document.querySelectorAll('header p');
-        textosHeader.forEach(p => p.style.display = 'none');
-        
-        // Ocultar también descripciones específicas por si acaso
-        if (document.getElementById('headerDescripcionLarga')) 
-            document.getElementById('headerDescripcionLarga').style.display = 'none';
-
-        // 3. GESTIÓN PANEL ADMIN Y PAQUETES
-        const adminPanel = document.getElementById('adminPanel');
-        if (adminPanel) {
-            adminPanel.style.display = 'block';
-            adminPanel.classList.add('show');
-            setTimeout(() => {
-                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
-
-        // Ocultar Listado de Paquetes (Opción B)
-        if (document.getElementById('listadoPaquetes')) {
-            document.getElementById('listadoPaquetes').style.display = 'none';
-        }
-        
-        // Asegurar calendario visible
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
-
-        // 4. CARGAR Y FINALIZAR
+        
+        const seccionReserva = document.querySelector('.section:has(#reservaForm)');
+        if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
+        
+        // Mostrar precio base en admin
+        const itemPrecio = document.getElementById('itemPrecio');
+        if (itemPrecio) itemPrecio.style.display = 'block';
+        
         cerrarModal('modalLoginAdmin');
         document.getElementById('passwordAdmin').value = '';
         
         await cargarDatosGoogle();
         generarCalendario();
-        mostrarAlerta('✔ Modo Admin Activo', 'success');
+        
+        mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
         generarSelectorMeses();
-
     } else {
         mostrarAlerta('Contraseña incorrecta', 'error');
     }
