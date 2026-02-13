@@ -1101,6 +1101,10 @@ async function verificarPassword(event) {
         document.getElementById('passwordAdmin').value = '';
         
         await cargarDatosGoogle();
+         // PASO 1: Ocultar listado de paquetes al entrar como admin
+        if (document.getElementById('listadoPaquetes')) {
+            document.getElementById('listadoPaquetes').style.display = 'none';
+        }
         generarCalendario();
         
         mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
