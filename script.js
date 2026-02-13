@@ -1343,6 +1343,20 @@ document.getElementById('reservaForm').addEventListener('submit', async function
 });
 
 // ===== CARGAR AL INICIO =====
+// Función para mostrar/ocultar listado de paquetes
+function togglePaquetes() {
+    const listado = document.getElementById('listadoPaquetes');
+    if (listado) {
+        if (listado.style.display === 'none' || listado.style.display === '') {
+            listado.style.display = 'block'; // Mostrar
+            console.log('📦 Mostrando paquetes');
+        } else {
+            listado.style.display = 'none'; // Ocultar
+            console.log('📦 Ocultando paquetes');
+        }
+    }
+}
+
 window.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Página cargada');
     console.log('🔗 Google Script:', GOOGLE_SCRIPT_URL);
