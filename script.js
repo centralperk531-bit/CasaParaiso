@@ -1078,38 +1078,6 @@ function togglePassword() {
     }
 }
 
-async function verificarPassword(event) {
-    if (event) event.preventDefault();
-    
-    const password = document.getElementById('passwordAdmin').value;
-    if (password === ADMIN_PASSWORD) {
-        modoAdmin = true;
-        document.body.classList.add('modo-admin');
-        document.getElementById('adminPanel').classList.add('show');
-        
-        const seccionDisp = document.getElementById('seccionDisponibilidad');
-        if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
-        
-        const seccionReserva = document.querySelector('.section:has(#reservaForm)');
-        if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
-        
-        // Mostrar precio base en admin
-        const itemPrecio = document.getElementById('itemPrecio');
-        if (itemPrecio) itemPrecio.style.display = 'block';
-        
-        cerrarModal('modalLoginAdmin');
-        document.getElementById('passwordAdmin').value = '';
-        
-        await cargarDatosGoogle();
-        generarCalendario();
-        
-        mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
-        generarSelectorMeses();
-    } else {
-        mostrarAlerta('Contraseña incorrecta', 'error');
-    }
-}
-
 function cerrarAdmin() {
     modoAdmin = false;
     document.body.classList.remove('modo-admin');
