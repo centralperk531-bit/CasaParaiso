@@ -334,10 +334,11 @@ function mostrarListadoPaquetes() {
     if (!contenedor || !listado) return;
     
     if (paquetesObligatorios.length === 0) {
-        contenedor.innerHTML = '<p style="color: #999; font-size: 0.85rem;">No hay paquetes activos</p>';
+        listado.style.display = 'none';
         return;
     }
     
+    listado.style.display = 'block';
     contenedor.innerHTML = paquetesObligatorios.map((paq, index) => {
         return `<div style="background: white; padding: 0.8rem; margin-bottom: 0.5rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.9rem;">📦 ${paq.inicio} → ${paq.fin}</span>
@@ -1474,15 +1475,3 @@ async function abrirMesCompleto() {
 }
 
 console.log('✅ Sistema inicializado');
-
-function togglePaquetes() {
-  const el = document.getElementById("listadoPaquetes");
-  if (!el) return;
-  
-  if (el.style.display === "none") {
-    el.style.display = "block";
-  } else {
-    el.style.display = "none";
-  }
-}
-window.togglePaquetes = togglePaquetes;
