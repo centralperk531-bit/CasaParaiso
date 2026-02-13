@@ -1082,55 +1082,29 @@ async function verificarPassword(event) {
     if (event) event.preventDefault();
     
     const password = document.getElementById('passwordAdmin').value;
-    
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
+        document.getElementById('adminPanel').classList.add('show');
         
-        // 1. FORZAR APARICIÓN DEL PANEL ADMIN
-        const adminPanel = document.getElementById('adminPanel');
-        if (adminPanel) {
-            adminPanel.style.display = 'block'; // <--- FORZAMOS VISIBILIDAD AQUÍ
-            adminPanel.classList.add('show');
-            
-            // Scroll para verlo
-            setTimeout(() => {
-                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
-
-        // 2. OCULTAR LISTADO DE PAQUETES (OPCIÓN B)
-        const listaPaq = document.getElementById('listadoPaquetes');
-        if (listaPaq) {
-            listaPaq.classList.add('is-hidden'); 
-            listaPaq.style.display = ''; 
-        }
-
-        // 3. LIMPIAR LA PANTALLA (Para que se note que estás en Admin)
-        // Ocultamos textos del header para dar sensación de "cambio de modo"
-        const descLarga = document.getElementById('headerDescripcionLarga');
-        const descCorta = document.getElementById('headerDescripcion');
-        if (descLarga) descLarga.style.display = 'none';
-        if (descCorta) descCorta.style.display = 'none';
-
-        // Asegurar calendario visible y reserva oculta
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
         
-        // 4. FINALIZAR
+        // Mostrar precio base en admin
+        const itemPrecio = document.getElementById('itemPrecio');
+        if (itemPrecio) itemPrecio.style.display = 'block';
+        
         cerrarModal('modalLoginAdmin');
-        const inputPass = document.getElementById('passwordAdmin');
-        if (inputPass) inputPass.value = '';
+        document.getElementById('passwordAdmin').value = '';
         
-        await cargarDatosGoogle(); // Cargamos datos
+        await cargarDatosGoogle();
+        generarCalendario();
         
-        generarCalendario(); // Regeneramos calendario
-        mostrarAlerta('✔ Modo Admin: Panel Activo', 'success');
+        mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
         generarSelectorMeses();
-
     } else {
         mostrarAlerta('Contraseña incorrecta', 'error');
     }
@@ -1499,15 +1473,5 @@ async function abrirMesCompleto() {
     window.bloquearSeleccionAdmin = bloquearSeleccionAdmin;
     window.desbloquearSeleccionAdmin = desbloquearSeleccionAdmin;
 }
-    function togglePaquetes() {
-      const el = document.getElementById("listadoPaquetes");
-      if (!el) return;
-  
-      if (el.style.display === "none") {
-        el.style.display = "block";
-      } else {
-        el.style.display = "none";
-      }
-    }
 
 console.log('✅ Sistema inicializado');
