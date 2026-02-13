@@ -628,11 +628,12 @@ footer {
         grid-template-columns: repeat(3, 1fr);
     }
 
-    /* Ocultar secciones innecesarias en modo admin */
-body.modo-admin .galeria,
-body.modo-admin section:has(#reservaForm),
-body.modo-admin section:has(.info-grid),
-body.modo-admin section:has(#pagoTitular) {
+   /* Ocultar secciones en modo admin */
+body.modo-admin section:nth-of-type(2),  /* Galería */
+body.modo-admin section:nth-of-type(3),  /* Info */
+body.modo-admin section:nth-of-type(5),  /* Reserva */
+body.modo-admin section:nth-of-type(6)   /* Datos Pago */
+{
   display: none !important;
 }
 
