@@ -1086,36 +1086,40 @@ async function verificarPassword(event) {
     if (password === ADMIN_PASSWORD) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
-        document.getElementById('adminPanel').classList.add('show');
-        
-        // Scroll suave al panel
-        setTimeout(() => {
-            document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-
-        // --- GESTIÓN DEL LISTADO DE PAQUETES ---
-        const listadoPaquetes = document.getElementById('listadoPaquetes');
-        if (listadoPaquetes) {
-            // Usamos la clase para ocultarlo inicialmente, así el botón podrá mostrarlo después
-            listadoPaquetes.classList.add('is-hidden');
-            // Aseguramos que no tenga display:none en línea que bloquee la clase
-            listadoPaquetes.style.display = ''; 
+        const adminPanel = document.getElementById('adminPanel');
+        if (adminPanel) {
+            adminPanel.classList.add('show');
+            setTimeout(() => {
+                adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
 
-        // --- RESETEO DE VISTAS (Calendario visible, Reserva oculta) ---
+        // --- GESTIÓN LISTADO PAQUETES (Opción B) ---
+        // Solo declaramos la variable UNA vez
+        const listadoPaquetes = document.getElementById('listadoPaquetes');
+        if (listadoPaquetes) {
+            listadoPaquetes.classList.add('is-hidden'); // Añadimos la clase para ocultarlo
+            listadoPaquetes.style.display = ''; // Limpiamos estilos inline si los hubiera
+        }
+        
+        // --- RESETEAR VISTA CALENDARIO ---
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
         
-        // --- FINALIZACIÓN ---
+        // Mostrar precio base en admin si existe
+        const itemPrecio = document.getElementById('itemPrecio');
+        if (itemPrecio) itemPrecio.style.display = 'block';
+        
         cerrarModal('modalLoginAdmin');
-        document.getElementById('passwordAdmin').value = '';
+        const inputPass = document.getElementById('passwordAdmin');
+        if (inputPass) inputPass.value = '';
         
         await cargarDatosGoogle();
-        generarCalendario();
         
+        generarCalendario();
         mostrarAlerta('✔ Modo admin activado', 'success');
         generarSelectorMeses();
 
@@ -1123,7 +1127,6 @@ async function verificarPassword(event) {
         mostrarAlerta('Contraseña incorrecta', 'error');
     }
 }
-
 
 function cerrarAdmin() {
     modoAdmin = false;
