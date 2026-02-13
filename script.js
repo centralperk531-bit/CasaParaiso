@@ -1493,18 +1493,6 @@ async function abrirMesCompleto() {
     window.bloquearSeleccionAdmin = bloquearSeleccionAdmin;
     window.desbloquearSeleccionAdmin = desbloquearSeleccionAdmin;
 
-// ===== BOTÓN PAQUETES =====
-function togglePaquetes() {
-    const listado = document.getElementById('listadoPaquetes');
-    if (!listado) return;
-    
-    if (listado.style.display === 'none' || listado.style.display === '') {
-        listado.style.display = 'block';
-        listado.classList.remove('is-hidden'); // Por si acaso
-    } else {
-        listado.style.display = 'none';
-        }
-    }
 }
 
 console.log('✅ Sistema inicializado');
