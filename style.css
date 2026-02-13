@@ -627,38 +627,3 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
-
-/* ===== UTILIDAD: OCULTAR ===== */
-.is-hidden {
-  display: none !important;
-}
-
-/* ===== PAQUETES: RESPONSIVE 900px ===== */
-@media (min-width: 900px) {
-  /* En PC/tablet horizontal: layout 2 columnas */
-  body.modo-admin #seccionDisponibilidad {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 1rem;
-    align-items: start;
-  }
-
-  /* Sidebar de paquetes: columna derecha, sticky */
-  body.modo-admin #listadoPaquetes {
-    display: block !important;
-    grid-column: 2;
-    position: sticky;
-    top: 1rem;
-    max-height: calc(100vh - 2rem);
-    overflow: auto;
-  }
-
-  /* Todo lo demás va a columna 1 (calendario) */
-  body.modo-admin #panelRangoAdmin,
-  body.modo-admin #seccionDisponibilidad > p,
-  body.modo-admin #seccionDisponibilidad .month-selector,
-  body.modo-admin #seccionDisponibilidad .calendar-wrapper {
-    grid-column: 1;
-  }
-}
-
