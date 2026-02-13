@@ -1087,40 +1087,48 @@ async function verificarPassword(event) {
         modoAdmin = true;
         document.body.classList.add('modo-admin');
         
+        // 1. FORZAR APARICIÓN DEL PANEL ADMIN
         const adminPanel = document.getElementById('adminPanel');
         if (adminPanel) {
+            adminPanel.style.display = 'block'; // <--- FORZAMOS VISIBILIDAD AQUÍ
             adminPanel.classList.add('show');
+            
+            // Scroll para verlo
             setTimeout(() => {
                 adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
 
-        // --- GESTIÓN DEL LISTADO (Variable renombrada para evitar errores) ---
+        // 2. OCULTAR LISTADO DE PAQUETES (OPCIÓN B)
         const listaPaq = document.getElementById('listadoPaquetes');
         if (listaPaq) {
             listaPaq.classList.add('is-hidden'); 
             listaPaq.style.display = ''; 
         }
 
-        // --- RESETEO DE VISTAS ---
+        // 3. LIMPIAR LA PANTALLA (Para que se note que estás en Admin)
+        // Ocultamos textos del header para dar sensación de "cambio de modo"
+        const descLarga = document.getElementById('headerDescripcionLarga');
+        const descCorta = document.getElementById('headerDescripcion');
+        if (descLarga) descLarga.style.display = 'none';
+        if (descCorta) descCorta.style.display = 'none';
+
+        // Asegurar calendario visible y reserva oculta
         const seccionDisp = document.getElementById('seccionDisponibilidad');
         if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
         
         const seccionReserva = document.querySelector('.section:has(#reservaForm)');
         if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
         
-        // Mostrar precio base
-        const itemPrecio = document.getElementById('itemPrecio');
-        if (itemPrecio) itemPrecio.style.display = 'block';
-        
+        // 4. FINALIZAR
         cerrarModal('modalLoginAdmin');
         const inputPass = document.getElementById('passwordAdmin');
         if (inputPass) inputPass.value = '';
         
-        await cargarDatosGoogle();
+        await cargarDatosGoogle(); // Cargamos datos
         
-        generarCalendario();
-        mostrarAlerta('✔ Modo admin activado', 'success');
+        generarCalendario(); // Regeneramos calendario
+        mostrarAlerta('✔ Modo Admin: Panel Activo', 'success');
         generarSelectorMeses();
 
     } else {
