@@ -1100,26 +1100,7 @@ async function verificarPassword(event) {
         cerrarModal('modalLoginAdmin');
         document.getElementById('passwordAdmin').value = '';
         
-        await cargarDatosGoogle();
-                // --- LIMPIEZA DE PANTALLA MODO ADMIN ---
-        // 1. Ocultar textos de bienvenida (Header)
-        const descLarga = document.getElementById('headerDescripcionLarga');
-        const descCorta = document.getElementById('headerDescripcion');
-        if (descLarga) descLarga.style.display = 'none';
-        if (descCorta) descCorta.style.display = 'none';
-
-        // 2. Ocultar el Listado de Paquetes inicialmente
-        const listaPaq = document.getElementById('listadoPaquetes');
-        // Usamos nombre 'listaPaq' para que no choque con otras variables
-        if (listaPaq) listaPaq.style.display = 'none';
-
-        // 3. Asegurar que se ve el Calendario (y ocultar reserva)
-        const seccionDisp = document.getElementById('seccionDisponibilidad');
-        if (seccionDisp) seccionDisp.style.setProperty('display', 'block', 'important');
-        
-        const seccionReserva = document.querySelector('.section:has(#reservaForm)');
-        if (seccionReserva) seccionReserva.style.setProperty('display', 'none', 'important');
-
+        await cargarDatosGoogle();                
         generarCalendario();
         
         mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
