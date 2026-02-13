@@ -627,3 +627,12 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
+
+/* Ocultar secciones en modo admin */
+body.modo-admin section:nth-of-type(3),  /* Galería */
+body.modo-admin section:nth-of-type(4),  /* Info */
+body.modo-admin section:nth-of-type(6),  /* Reserva */
+body.modo-admin section:nth-of-type(7)   /* Datos Pago */
+{
+  display: none !important;
+}
