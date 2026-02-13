@@ -334,11 +334,10 @@ function mostrarListadoPaquetes() {
     if (!contenedor || !listado) return;
     
     if (paquetesObligatorios.length === 0) {
-        listado.classList.add('is-hidden');
+        contenedor.innerHTML = '<p style="color: #999; font-size: 0.85rem;">No hay paquetes activos</p>';
         return;
     }
     
-    listado.classList.remove('is-hidden');
     contenedor.innerHTML = paquetesObligatorios.map((paq, index) => {
         return `<div style="background: white; padding: 0.8rem; margin-bottom: 0.5rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.9rem;">📦 ${paq.inicio} → ${paq.fin}</span>
