@@ -1110,10 +1110,12 @@ async function verificarPassword(event) {
         if (document.getElementById('headerDescripcionLarga')) {
             document.getElementById('headerDescripcionLarga').style.display = 'none';
         }
-                // PASO 3: Ocultar info-grid (capacidad, precio, etc.)
-        if (document.querySelector('.info-grid')) {
-            document.querySelector('.info-grid').style.display = 'none';
-        }
+                        // PASO 3: Ocultar info-grid (esperando que se cargue)
+        setTimeout(() => {
+            if (document.querySelector('.info-grid')) {
+                document.querySelector('.info-grid').style.display = 'none';
+            }
+        }, 200);
                         
         mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
         generarSelectorMeses();
