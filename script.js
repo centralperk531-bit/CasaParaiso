@@ -1102,11 +1102,16 @@ async function verificarPassword(event) {
         
         await cargarDatosGoogle();
         generarCalendario();
-        // DEBUG: Para ver si llega aquí
-        console.log('🔍 DEBUG: Estoy en verificarPassword');
-         // PASO 1: Ocultar listado de paquetes al entrar como admin
+        // PASO 1: Ocultar listado de paquetes al entrar como admin
         if (document.getElementById('listadoPaquetes')) {
             document.getElementById('listadoPaquetes').style.display = 'none';
+        }
+                // PASO 2: Ocultar textos del header
+        if (document.getElementById('headerDescripcionLarga')) {
+            document.getElementById('headerDescripcionLarga').style.display = 'none';
+        }
+        if (document.getElementById('headerDescripcion')) {
+            document.getElementById('headerDescripcion').style.display = 'none';
         }
                 
         mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
