@@ -627,10 +627,26 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
-    /* Ocultar elementos en modo admin */
-    .modo-admin .info-grid,
-    .modo-admin .galeria {
-        display: none !important;
-    }
-
     
+    /* ===== MODO ADMIN: Ocultar todo lo innecesario ===== */
+    .modo-admin {
+        /* Header: textos, enlaces, ubicación */
+        .info-grid,
+        #headerDescripcionLarga,
+        #headerDescripcion,
+        header p,
+        header a[href*="ubicacion"],
+        header a[href*="galeria"] {
+            display: none !important;
+        }
+    
+        /* Galería */
+        .galeria {
+            display: none !important;
+        }
+    
+        /* Listado paquetes (inicialmente oculto) */
+        #listadoPaquetes {
+            display: none !important;
+        }
+    }
