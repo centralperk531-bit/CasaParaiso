@@ -1102,10 +1102,14 @@ async function verificarPassword(event) {
         
         await cargarDatosGoogle();
         generarCalendario();
-               // PASO 1: Ocultar listado de paquetes al entrar como admin
-        if (document.getElementById('listadoPaquetes')) {
-            document.getElementById('listadoPaquetes').style.display = 'none';
-        }
+             // PASO 1: Ocultar listado de paquetes al entrar como admin
+        document.addEventListener('DOMContentLoaded', function() {
+            const listado = document.getElementById('listadoPaquetes');
+            if (listado) {
+                listado.style.display = 'none';
+            }
+        });
+
                 // PASO 2: Ocultar descripción larga del header
         if (document.getElementById('headerDescripcionLarga')) {
             document.getElementById('headerDescripcionLarga').style.display = 'none';
