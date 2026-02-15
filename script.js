@@ -1112,6 +1112,9 @@ async function verificarPassword(event) {
         }
                                       // PASO 4: Ocultar galería e info-grid
         setTimeout(() => {
+            // DEBUG: Ver si encuentra elementos
+            console.log('🔍 Buscando info-grid:', document.querySelector('.info-grid'));
+            console.log('🔍 Buscando galeria:', document.querySelector('.galeria'));
             // Info-grid
             const infoGrid = document.querySelector('.info-grid');
             if (infoGrid) infoGrid.style.display = 'none';
