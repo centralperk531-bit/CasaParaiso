@@ -627,25 +627,18 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
-    
-    /* ===== MODO ADMIN: Ocultar todo lo innecesario ===== */
-    .modo-admin {
-        /* Header: textos, enlaces, ubicación */
-        .info-grid,
-        #headerDescripcionLarga,
-        #headerDescripcion,
-        header p,
-        header a[href*="ubicacion"],
-        header a[href*="galeria"] {
-            display: none !important;
-        }
-    
-        /* Galería */
-        .galeria {
-            display: none !important;
-        } 
-       /* #listadoPaquetes.invisible {
-            display: none !important;
-        } */
-      
+    /* ===== MODO ADMIN: Ocultar todo (CORREGIDO) ===== */
+    .modo-admin .info-grid,
+    .modo-admin #headerDescripcionLarga,
+    .modo-admin #headerDescripcion,
+    .modo-admin header p,
+    .modo-admin header a[href*="ubicacion"],
+    .modo-admin header a[href*="galeria"],
+    .modo-admin .galeria {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
+
