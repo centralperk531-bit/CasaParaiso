@@ -644,5 +644,9 @@ footer {
         .galeria {
             display: none !important;
         } 
+        /* Listado paquetes (inicialmente oculto) */
+        #listadoPaquetes {
+            display: none !important;
+        }
        
     }
