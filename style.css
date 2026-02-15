@@ -645,8 +645,8 @@ footer {
             display: none !important;
         } 
         /* Listado paquetes (inicialmente oculto) */
-        #listadoPaquetes {
+        /* #listadoPaquetes {
             display: none !important;
-        }
+        } */
        
     }
