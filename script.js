@@ -1110,12 +1110,21 @@ async function verificarPassword(event) {
         if (document.getElementById('headerDescripcionLarga')) {
             document.getElementById('headerDescripcionLarga').style.display = 'none';
         }
-                        // PASO 3: Ocultar info-grid (esperando que se cargue)
+                              // PASO 4: Ocultar galería e info-grid (esperando carga)
         setTimeout(() => {
-            if (document.querySelector('.info-grid')) {
-                document.querySelector('.info-grid').style.display = 'none';
-            }
-        }, 200);
+            // Info-grid (capacidad, precio...)
+            const infoGrid = document.querySelector('.info-grid');
+            if (infoGrid) infoGrid.style.display = 'none';
+            
+            // Galería (ajusta el selector según tu HTML)
+            const galeria = document.querySelector('.galeria, #galeria, [class*="galeria"]');
+            if (galeria) galeria.style.display = 'none';
+            
+            // También buscar por palabras clave en clases
+            document.querySelectorAll('[class*="galeria"], [id*="galeria"]').forEach(el => {
+                el.style.display = 'none';
+            });
+        }, 500); // Espera 1.5 segundos
                         
         mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
         generarSelectorMeses();
