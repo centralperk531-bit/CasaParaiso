@@ -628,9 +628,9 @@ footer {
         grid-template-columns: repeat(3, 1fr);
     }
     /* Ocultar elementos en modo admin */
-.modo-admin .info-grid,
-.modo-admin .galeria {
-    display: none !important;
-}
+    .modo-admin .info-grid,
+    .modo-admin .galeria {
+        display: none !important;
+    }
 
     
