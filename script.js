@@ -1494,5 +1494,14 @@ async function abrirMesCompleto() {
     window.desbloquearSeleccionAdmin = desbloquearSeleccionAdmin;
 
 }
+// MÓVIL: Anti-parpadeo (solo si es móvil)
+if (window.innerWidth <= 768 && document.body.classList.contains('modo-admin')) {
+    setTimeout(() => {
+        const infoGrid = document.querySelector('.info-grid');
+        const galeria = document.querySelector('.galeria');
+        if (infoGrid) infoGrid.style.minHeight = '0';
+        if (galeria) galeria.style.minHeight = '0';
+    }, 50);
+}
 
 console.log('✅ Sistema inicializado');
