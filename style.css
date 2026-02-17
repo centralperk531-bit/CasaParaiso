@@ -627,17 +627,11 @@ footer {
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
-    /* SOLO MÓVIL modo-admin (sin tocar PC) */
-@media (max-width: 768px) and (body.modo-admin) {
-    .info-grid,
-    .galeria,
-    #headerDescripcionLarga,
-    #headerDescripcion,
-    header p {
+    /* MODO ADMIN ESTABLE */
+    .modo-admin .info-grid,
+    .modo-admin .galeria,
+    .modo-admin #headerDescripcionLarga,
+    .modo-admin #headerDescripcion {
         display: none !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
     }
 }
