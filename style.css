@@ -626,10 +626,14 @@ footer {
     
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
-        }
-       .modo-admin .info-grid,
-        .modo-admin .galeria {
-        display: none !important;
     }
+}
 
+/* ===== MODO ADMIN: PC + MÓVIL ===== */
+.modo-admin #headerDescripcionLarga,
+.modo-admin #headerDescripcion,
+.modo-admin header p,
+.modo-admin .info-grid,
+.modo-admin .galeria {
+    display: none !important;
 }
