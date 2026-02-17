@@ -628,7 +628,7 @@ footer {
         grid-template-columns: repeat(3, 1fr);
     }
     /* ===== MODO ADMIN: Ocultar todo (CORREGIDO) ===== */
-    .modo-admin .info-grid,
+   /* .modo-admin .info-grid,
     .modo-admin #headerDescripcionLarga,
     .modo-admin #headerDescripcion,
     .modo-admin header p,
@@ -640,5 +640,32 @@ footer {
         height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
-    }
+    } */
+    // MÓVIL: Ocultar ANTES de que parpadee
+function ocultarMalo() {
+    ['.info-grid', '.galeria', '#headerDescripcionLarga', '#headerDescripcion', 'header p'].forEach(sel => {
+        const elem = document.querySelector(sel);
+        if (elem) {
+            elem.style.display = 'none';
+            elem.style.height = '0';
+        }
+    });
+}
+
+// 4 disparos para pillar móvil lento
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ocultarMalo);
+} else {
+    ocultarMalo();
+}
+setTimeout(ocultarMalo, 10);
+setTimeout(ocultarMalo, 50);
+setTimeout(ocultarMalo, 150);
+
+// Listado paquetes (por separado)
+setTimeout(() => {
+    const listado = document.getElementById('listadoPaquetes');
+    if (listado) listado.style.display = 'none';
+}, 100);
+
 }
