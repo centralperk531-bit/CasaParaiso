@@ -626,22 +626,10 @@ footer {
     
     .control-buttons {
         grid-template-columns: repeat(3, 1fr);
-    }
-    /* MODO ADMIN ESTABLE */
-    .modo-admin .info-grid,
-    .modo-admin .galeria,
-    .modo-admin #headerDescripcionLarga,
-    .modo-admin #headerDescripcion {
+        }
+       .modo-admin .info-grid,
+        .modo-admin .galeria {
         display: none !important;
     }
-    /* MÓVIL: Eliminar huecos */
-    @media (max-width: 768px) {
-        .modo-admin .info-grid,
-        .modo-admin .galeria {
-            min-height: 0 !important;
-            height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-    }
+
 }
