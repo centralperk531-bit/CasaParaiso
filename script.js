@@ -1,3 +1,13 @@
+// ANTI-PARPADEO MÓVIL (solo si es móvil)
+if (window.innerWidth <= 768 && document.body.classList.contains('modo-admin')) {
+    setTimeout(() => {
+        ['.info-grid', '.galeria'].forEach(selector => {
+            const elemento = document.querySelector(selector);
+            if (elemento) elemento.remove();
+        });
+    }, 0);
+}
+
 // ===== CONFIGURACIÓN =====
 const ADMIN_PASSWORD = "Jesus170385";
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_llWLzIYpMB6q6gxYh_szhQscNj7tBVA3EtVn0CuNSKICyXv2kPKAoYDRHqrEZD9t/exec";
