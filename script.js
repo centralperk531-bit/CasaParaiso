@@ -1,13 +1,3 @@
-// ANTI-PARPADEO MÓVIL (solo si es móvil)
-if (window.innerWidth <= 768 && document.body.classList.contains('modo-admin')) {
-    setTimeout(() => {
-        ['.info-grid', '.galeria'].forEach(selector => {
-            const elemento = document.querySelector(selector);
-            if (elemento) elemento.remove();
-        });
-    }, 0);
-}
-
 // ===== CONFIGURACIÓN =====
 const ADMIN_PASSWORD = "Jesus170385";
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_llWLzIYpMB6q6gxYh_szhQscNj7tBVA3EtVn0CuNSKICyXv2kPKAoYDRHqrEZD9t/exec";
@@ -1112,33 +1102,13 @@ async function verificarPassword(event) {
         
         await cargarDatosGoogle();
         generarCalendario();
-             // PASO 1: Ocultar listado de paquetes al entrar como admin
-        document.addEventListener('DOMContentLoaded', function() {
-            const listado = document.getElementById('listadoPaquetes');
-            if (listado) {
-                listado.style.display = 'none';
-            }
-        });
-
-                // PASO 2: Ocultar descripción larga del header
-        if (document.getElementById('headerDescripcionLarga')) {
-            document.getElementById('headerDescripcionLarga').style.display = 'none';
+        // DEBUG: Para ver si llega aquí
+        console.log('🔍 DEBUG: Estoy en verificarPassword');
+         // PASO 1: Ocultar listado de paquetes al entrar como admin
+        if (document.getElementById('listadoPaquetes')) {
+            document.getElementById('listadoPaquetes').style.display = 'none';
         }
-                          // PASO 4: Ocultar galería e info-grid (más tiempo)
-        setTimeout(() => {
-            const infoGrid = document.querySelector('.info-grid');
-            if (infoGrid) {
-                infoGrid.style.display = 'none !important';
-                infoGrid.style.visibility = 'hidden';
-            }
-            
-            const galeria = document.querySelector('.galeria');
-            if (galeria) {
-                galeria.style.display = 'none !important';
-                galeria.style.visibility = 'hidden';
-            }
-        }, 1500); // 1.5 segundos
-                        
+                
         mostrarAlerta('✔ Modo admin. Haz CLICK en 2 fechas para paquete', 'success');
         generarSelectorMeses();
     } else {
