@@ -1,3 +1,22 @@
+// #1 ANTI-MÓVIL: Ocultar ANTES de pintar
+(function(){
+    if (/Android|iPhone|iPad|Mobi/.test(navigator.userAgent) && document.body.classList.contains('modo-admin')) {
+        document.documentElement.style.visibility = 'hidden'; // Paraliza render
+        
+        setTimeout(() => {
+            ['.info-grid', '.galeria', '#headerDescripcionLarga', '#headerDescripcion'].forEach(s => {
+                const e = document.querySelector(s);
+                if (e) {
+                    e.style.display = 'none';
+                    e.innerHTML = ''; // Vaciar contenido
+                }
+            });
+            
+            document.documentElement.style.visibility = 'visible'; // Renderizar limpio
+        }, 10);
+    }
+})();
+
 // ===== CONFIGURACIÓN =====
 const ADMIN_PASSWORD = "Jesus170385";
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_llWLzIYpMB6q6gxYh_szhQscNj7tBVA3EtVn0CuNSKICyXv2kPKAoYDRHqrEZD9t/exec";
