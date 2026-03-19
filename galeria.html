@@ -203,6 +203,7 @@ h1 {
   </div>
 </div>
 
+<script>
 let imagenActual = 0;
 const imagenes = document.querySelectorAll('.galeria img');
 const lightbox = document.getElementById('lightbox');
@@ -272,5 +273,6 @@ document.addEventListener('keydown', (e) => {
 lightbox.addEventListener('click', (e) => {
   if (e.target === lightbox) cerrarLightbox();
 });
-/body>
+</script>
+</body>
 </html>
