@@ -225,7 +225,7 @@ function abrirLightbox(index) {
     lightboxContent.innerHTML = `
       <button class="lightbox-close" onclick="cerrarLightbox()">&times;</button>
       <button class="lightbox-nav lightbox-prev" onclick="cambiarImagen(-1)">&#10094;</button>
-      <video id="lightbox-video" controls width="90%" height="auto" preload="metadata">
+      <video id="lightbox-video" controls style="max-height:85vh; width:auto;" preload="metadata">S
         <source src="${img.dataset.video}" type="video/mp4">
         Tu navegador no soporta vídeo.
       </video>
